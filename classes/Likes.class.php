@@ -27,11 +27,11 @@ class Likes extends Db {
         $sql = "UPDATE posts SET likes = likes - 1 WHERE post_id = ?";
         $stmt = $this->connection()->prepare($sql);
         $stmt->execute([$post_id]);
-        $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $sql = "DELETE FROM likes WHERE post_id = ? AND user_id = ?";
         $stmt = $this->connection()->prepare($sql);
         $stmt->execute([$post_id, $user_id]);
     }
+
 
 }

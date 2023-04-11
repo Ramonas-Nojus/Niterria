@@ -2,20 +2,20 @@ RewriteEngine on
 
 RewriteRule ^(index|contact|registration|login|search|logout|profile|users_search|about)$ $1.php [NC,L]
 
-RewriteRule ^(videos/)$ videos.php [NC,L]
-
 RewriteRule ^post/(\d+)$ post.php?p_id=$1 [NC,L]
 
-RewriteRule ^watch/(\d+)$ watch.php?v_id=$1 [NC,L]
+RewriteRule ^post/(\d+)/edit/(\d+)$ post.php?p_id=$1&edit=$2 [NC,L]
+
+RewriteRule ^post/(\d+)/delete/(\d+)$ post.php?p_id=$1&delete_comment=$2 [NC,L]
+
+RewriteRule ^post/(\d+)/like/(\d+)$ post.php?p_id=$1&like=$2 [NC,L]
+
+RewriteRule ^post/(\d+)/unlike/(\d+)$ post.php?p_id=$1&unlike=$2 [NC,L]
 
 RewriteRule ^category/([^/]*)/(\d+)/?$ category.php?category=$1&cat_id=$2 
 
-RewriteRule ^author/([^/]*)$ author_posts.php?author=$1 
+# RewriteRule ^forgot/([^/]*)$ forgot.php?forgot=$1 
 
-RewriteRule ^user_profile/([^/]*)$ user_profile.php?username=$1
-
-RewriteRule ^report/([^/]*)$ report_user.php?username=$1 
-
-RewriteRule ^forgot/([^/]*)$ forgot.php?forgot=$1 
-
+ErrorDocument 500 /errors/500.php
+ErrorDocument 404 /errors/404.php
 

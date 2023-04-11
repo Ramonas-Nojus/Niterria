@@ -12,28 +12,28 @@ if(isset($_POST['checkBoxArray'])) {
     
     foreach($_POST['checkBoxArray'] as $postValueId ){
         
-  $bulk_options = $_POST['bulk_options'];
-        
+            $bulk_options = $_POST['bulk_options'];
+                    
         switch($bulk_options) {
         case 'published':
-        
-$query = "UPDATE posts SET post_status = '{$bulk_options}' WHERE post_id = {$postValueId}  ";
-        
-$update_to_published_status = mysqli_query($connection,$query);       
-confirmQuery($update_to_published_status);
+                
+        $query = "UPDATE posts SET post_status = '{$bulk_options}' WHERE post_id = {$postValueId}  ";
+                
+        $update_to_published_status = mysqli_query($connection,$query);       
+        confirmQuery($update_to_published_status);
 
 
             
          break;
             
             
-              case 'draft':
-        
-$query = "UPDATE posts SET post_status = '{$bulk_options}' WHERE post_id = {$postValueId}  ";
-        
- $update_to_draft_status = mysqli_query($connection,$query);
-            
-confirmQuery($update_to_draft_status);
+        case 'draft':
+
+        $query = "UPDATE posts SET post_status = '{$bulk_options}' WHERE post_id = {$postValueId}  ";
+                
+        $update_to_draft_status = mysqli_query($connection,$query);
+                    
+        confirmQuery($update_to_draft_status);
 
 
 
@@ -42,19 +42,22 @@ confirmQuery($update_to_draft_status);
             
          break;
             
-  
-            
-               case 'delete':
-        
-$query = "DELETE FROM posts WHERE post_id = {$postValueId}  ";
-        
- $update_to_delete_status = mysqli_query($connection,$query);
-            
-confirmQuery($update_to_delete_status);
 
+        case 'delete':
+
+        $query = "DELETE FROM posts WHERE post_id = {$postValueId}  ";
+        $queryLikes = "DELETE FROM likes WHERE post_id = {$postValueId}  ";
+        $queryComments = "DELETE FROM comments WHERE comment_post_id = {$postValueId}  ";
+                
+        $deletePost = mysqli_query($connection,$query);
+        $deleteLikes = mysqli_query($connection,$queryLikes);
+        $deleteComments = mysqli_query($connection,$queryComments);
+
+        confirmQuery($deletePost);
+        confirmQuery($deleteLikes);
+        confirmQuery($deleteComments);            
             
-            
-         break;
+        break;
 
 
             case 'clone':

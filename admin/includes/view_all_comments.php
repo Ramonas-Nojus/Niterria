@@ -1,3 +1,4 @@
+<?php  include "../includes/class.autoload.php"; ?>
 <?php  
 
 if(isset($_POST['checkBoxArray'])) {
@@ -113,9 +114,8 @@ confirmQuery($update_to_delete);
     $select_comments = mysqli_query($connection,$query);
     while($row = mysqli_fetch_assoc($select_comments)) {
         $comment_id          = $row['comment_id'];
+        $author_id           = $row['author_id'];
         $comment_post_id     = $row['comment_post_id'];
-        $comment_video_id     = $row['comment_video_id'];
-        $comment_author      = $row['comment_author'];
         $comment_content     = $row['comment_content'];
         $comment_email       = $row['comment_email'];
         $comment_status      = $row['comment_status'];
@@ -129,9 +129,13 @@ confirmQuery($update_to_delete);
           
         
         <?php
+
+        $getComments = new Comments();
+
+        $author =  $getComments->getCommentAuthor($author_id)['username'];
         
         echo "<td>$comment_id </td>";
-        echo "<td>$comment_author</td>";
+        echo "<td>$author </td>";
         echo "<td>$comment_content</td>";
         echo "<td>$comment_email</td>";
         echo "<td>$comment_status</td>";
