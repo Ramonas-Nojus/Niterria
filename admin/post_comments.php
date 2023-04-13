@@ -29,6 +29,12 @@
 
 <?php  
 
+
+if(!is_admin($_SESSION['username'])){
+
+    header("Location: /");
+}
+
 if(isset($_POST['checkBoxArray'])) {
 
     $checkBox = $_POST['checkBoxArray'];

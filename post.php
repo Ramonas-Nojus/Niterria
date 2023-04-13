@@ -3,6 +3,7 @@
  <?php  include "includes/class.autoload.php"; ?>
     <!-- Navigation -->
     <?php  include "includes/navigation.php"; ?>
+    
 
 <?php 
 
@@ -75,6 +76,11 @@ if(isset($_GET['unlike'])){
      $stmt = $stmt2;
 
     }
+
+    mysqli_stmt_store_result($stmt);
+
+    if(mysqli_stmt_num_rows($stmt) != 1) { header("Location: /errors/404.php"); }
+
     while(mysqli_stmt_fetch($stmt)) {
         ?>
                 <!-- First Blog Post -->
@@ -91,7 +97,7 @@ if(isset($_GET['unlike'])){
                 <p><?php echo stripslashes($post_content); ?></p>
         <?php }         
                 if(isLoggedIn()){ ?>
-                <div class="row" style="float: left; margin-left; 10px; padding-right: 10px">
+                <div class="row" style="margin-left; 10px; padding-right: 10px">
     
             <?php        if(UserLikedPost($the_post_id)){  ?>
                             <p class="pull-left"><a href="/post/<?php echo $the_post_id ?>/unlike/<?php echo $_SESSION['user_id']; ?>" >
@@ -105,15 +111,9 @@ if(isset($_GET['unlike'])){
                                     <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z"/>
                                 </svg>
                             </a></p>
-                         <?php }  } else { echo "<p class='pull-left'>You need to <a href='/login'>Log In</a> to leave like</p>"; } ?>
+                         <?php }  } ?>
                          </div>
 
-                        <?php 
-                        $Likes = new Likes();
-                        $likes = $Likes->getLikesPost($the_post_id);
-                        $lik = $likes['likes'];
-                        echo "<p style='display: inline-block; padding-left: 15px;'>$lik </p>";  
-                        ?>
                         <hr>      
 
 <!-- Blog Comments -->
@@ -137,9 +137,11 @@ if(isset($_GET['unlike'])){
     }
 
 ?> 
+            <?php if(!isLoggedIn()) include "includes/sidebar.php";?>
+
                 <!-- Posted Comments -->
         <!-- Comments Form -->
-        <div class="card-body p-4 text-black" style="background-color: #F5F5F5;  border: 2px solid #BAC3D5; margin-top: 30px;">
+        <div class="card-body p-4 text-black" style="background-color: #F5F5F5;  border: 2px solid #BAC3D5;">
             <h4>Leave a Comment:</h4>
             <?php if(isLoggedIn()){ ?>
             <form action="" method="post" role="form">
@@ -148,7 +150,7 @@ if(isset($_GET['unlike'])){
                 </div>
                 <button type="submit" name="create_comment" class="btn btn-primary">Submit</button>
             </form>
-            <?php } else { echo "you need to <a href='/Niterria/login'>log in</a> to leave comment"; }  ?>
+            <?php } else { echo "you need to <a href='/login'>log in</a> to leave comment"; }  ?>
         </div>
         <hr>
                  <?php 
@@ -210,7 +212,7 @@ if(isset($_GET['unlike'])){
                         <?php } ?>
 
                     
-                    <?php if($author_id == $_SESSION['user_id']){ ?>
+                    <?php if(isLoggedIn() && $author_id == $_SESSION['user_id']){ ?>
                     <div class="dropdown-container " tabindex="-1">
                       <div class="three-dots pull-right"></div>
                         <div class="dropdown">
@@ -230,7 +232,8 @@ if(isset($_GET['unlike'])){
                 ?>
             </div>
             <!-- Blog Sidebar Widgets Column -->
-            <?php include "includes/sidebar.php";?>
+            <?php if(isLoggedIn()) include "includes/sidebar.php";?>
+
         </div>
         <!-- /.row -->
         <hr>

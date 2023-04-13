@@ -48,6 +48,12 @@
                       
                       <?php 
 
+                            
+                    if(!is_admin($_SESSION['username'])){
+
+                        header("Location: /");
+                    }
+
                         $query = "SELECT * FROM posts";
                         $select_all_post = mysqli_query($connection,$query);
                         $post_count = mysqli_num_rows($select_all_post);

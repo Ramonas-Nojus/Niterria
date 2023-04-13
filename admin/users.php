@@ -4,7 +4,7 @@
 
             if(!is_admin($_SESSION['username'])){
 
-                header("Location: index.php");
+                header("Location: /");
             }
          ?>
     <div id="wrapper">
