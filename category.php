@@ -18,69 +18,67 @@
       echo "<h1>All posts with <<<b>$category</b>>>> categorie</h1><Br>";
 
       $posts = new Posts();
+        
+    $PostsByCat = $posts->PostsByCat($post_category_id);
 
-if(isset($_SESSION['username']) && is_admin($_SESSION['username'])){
+    if(count($PostsByCat) == 0) { 
+        echo "<h1>There is no posts yet</h1>"; 
+    } else {
 
-    $adminPostsByCat = $posts->adminPostsByCat($post_category_id);
-    foreach($adminPostsByCat as $row){
-        $post_id = $row['post_id'];
-        $post_title = $row['post_title'];
-        $post_date = $row['post_date'];
-        $post_image = $row['post_image'];
-        $post_subtitle = $row['post_subtitle'];
-        $post_status = $row['post_status'];
-        ?>
-        <h2>
-                    <a href="/post/<?php echo $post_id; ?>"><?php echo $post_title ?></a>
-                </h2>
-                
-                <img class="img-responsive" src="/images/<?php if($post_image == ""){ echo "y9DpT.jpg"; } else{echo $post_image;}?>" alt="">
-                <hr>
-                <p><span class="glyphicon glyphicon-time"></span> <?php echo $post_date ?></p>
-                <hr>
-                <p><?php echo $post_subtitle; ?></p>
-                <a class="btn btn-primary" href="#">Read More <span class="glyphicon glyphicon-chevron-right"></span></a>
-                <hr>
-                <?php 
-    }
+        $per_page = 5;
 
-} else {
-        //  $stmt2 = mysqli_prepare($connection, "SELECT post_id, post_title, post_user, post_date, post_image, post_content FROM posts WHERE post_category_id = ? AND post_status = ? ");
-        //  $published = 'published';
-    $PostsByCat = $postsByCat->PostsByCat($post_category_id);
+        if(isset($_GET['page'])) {
+            $page = $_GET['page'];
+        } else {
+            $page = "";
+        }
+        if($page == "" || $page == 1) {
+            $page_1 = 0;
+        } else {
+            $page_1 = ($page * $per_page) - $per_page;
+        }
+        $count  = ceil(count($PostsByCat) /$per_page);
+
     foreach($PostsByCat as $row){
         $post_id = $row['post_id'];
         $post_title = $row['post_title'];
-        $post_author = $row['post_user'];
-        $post_author_id = $row['post_user_id'];
         $post_date = $row['post_date'];
         $post_image = $row['post_image'];
-        $post_content = $row['post_content'];
         $post_status = $row['post_status'];
+        $post_subtitle = $row['post_subtitle'];
+
         ?>
         <h2>
                     <a href="/post/<?php echo $post_id; ?>"><?php echo $post_title ?></a>
                 </h2>
-                <p class="lead">
-                    by <a href="author/<?php echo $post_author; ?>"><?php echo $post_author ?></a>
-                </p>
                 <p><span class="glyphicon glyphicon-time"></span> <?php echo $post_date ?></p>
                 <hr>
                 <img class="img-responsive" src="/images/<?php if($post_image == ""){ echo "y9DpT.jpg"; } else{echo $post_image;}?>" alt="">
                 <hr>
-                <p><?php echo $post_content ?></p>
-                <a class="btn btn-primary" href="#">Read More <span class="glyphicon glyphicon-chevron-right"></span></a>
+                <p><?php echo $post_subtitle ?></p>
+                <a class="btn btn-primary" href="/post/<?php echo $post_id; ?>">Read More <span class="glyphicon glyphicon-chevron-right"></span></a>
                 <hr>
                 <?php 
-    }
-} } else {
+    }?>
+
+        <ul class="pager">
+            <?php 
+                for($i =1; $i <= $count; $i++) {
+                    if($i == $page) {
+                        echo "<li class='page-item'><a style='background-color: #33CBC2; color: white;' href='/profile?page={$i}'>{$i}</a></li>";
+                    } else {
+                        echo "<li class='page-item'><a class='page-link' href='/profile?page={$i}'>{$i}</a></li>";
+                    }
+                } 
+            ?>
+        </ul>
+
+<?php } } else {
     redirect('/');
     }
 ?>
-            </div>
-            <!-- Blog Sidebar Widgets Column -->
+                </div>
             <?php include "includes/sidebar.php";?>
         </div>
-        <!-- /.row -->
-        <hr>
+    <hr>
 <?php include "includes/footer.php";?>

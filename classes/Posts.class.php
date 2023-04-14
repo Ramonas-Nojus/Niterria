@@ -25,19 +25,9 @@ class Posts extends \DB {
         return $sth->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function adminPostsByCat($post_category_id){
-        
-        $sql = "SELECT * FROM posts WHERE post_category_id = :post_category_id ORDER BY post_id DESC";
-        $sth = $this->connection()->prepare($sql);
-        $sth->bindValue("post_category_id", $post_category_id, PDO::PARAM_INT);
-        $sth->execute();
-
-        return $sth->fetchAll(\PDO::FETCH_ASSOC);
-    }
-
     public function postsByCat($post_category_id){
 
-        $sql = "SELECT * FROM posts WHERE post_category_id = :post_category_id AND post_status = published ORDER BY post_id DESC";
+        $sql = "SELECT * FROM posts WHERE post_category_id = :post_category_id AND post_status = 'published' ORDER BY post_id DESC";
         $sth = $this->connection()->prepare($sql);
         $sth->bindValue("post_category_id", $post_category_id, PDO::PARAM_INT);
         $sth->execute();

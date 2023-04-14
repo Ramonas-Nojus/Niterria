@@ -134,7 +134,22 @@ input[type=text], select {
         </div>
 
            <?php
-                $likedPosts = $posts->getLikedPosts(0, 10, $post_id_list);
+                 $per_page = 5;
+
+                if(isset($_GET['page'])) {
+                  $page = $_GET['page'];
+                } else {
+                  $page = "";
+                }
+                if($page == "" || $page == 1) {
+                  $page_1 = 0;
+                } else {
+                  $page_1 = ($page * $per_page) - $per_page;
+                }
+
+                $likedPosts = $posts->getLikedPosts($page_1, $per_page, $post_id_list);
+
+                $count  = ceil(count($likedPostsIds) /$per_page);
 
                 foreach($likedPosts as $x){
                     $post_id = $x['post_id'];
@@ -163,6 +178,18 @@ input[type=text], select {
             </div>
             </div>
             <?php } ?>
+            <ul class="pager">
+
+            <?php 
+                for($i =1; $i <= $count; $i++) {
+                    if($i == $page) {
+                        echo "<li class='page-item'><a style='background-color: #33CBC2; color: white;' href='/profile?page={$i}'>{$i}</a></li>";
+                    } else {
+                            echo "<li class='page-item'><a class='page-link' href='/profile?page={$i}'>{$i}</a></li>";
+                    }
+                } 
+            ?>
+              </ul>
             </div>
           </div>
         </div>

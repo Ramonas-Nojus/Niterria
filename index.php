@@ -79,24 +79,17 @@
             <?php include "includes/sidebar.php";?>
         </div>
 
-
-
         <!-- /.row -->
         <hr>
         <ul class="pager">
-
-        <?php 
-            for($i =1; $i <= $count; $i++) {
-                if($i == $page) {
-                    echo "<li class='page-item'><a style='background-color: #33CBC2; color: white;' href='index.php?page={$i}'>{$i}</a></li>";
-                } else {
-                        echo "<li class='page-item'><a class='page-link' href='index.php?page={$i}'>{$i}</a></li>";
-                }
-            } 
-        ?>
+            <?php 
+                for($i =1; $i <= $count; $i++) {
+                    if($i == $page) {
+                        echo "<li class='page-item'><a style='background-color: #33CBC2; color: white;' href='/?page={$i}'>{$i}</a></li>";
+                    } else {
+                        echo "<li class='page-item'><a class='page-link' href='/?page={$i}'>{$i}</a></li>";
+                    }
+                } 
+            ?>
         </ul>
-
-
-
-
 <?php include "includes/footer.php";?>

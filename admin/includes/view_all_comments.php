@@ -6,84 +6,55 @@ if(isset($_POST['checkBoxArray'])) {
     
     foreach($_POST['checkBoxArray'] as $commentValueId ){
         
-  $bulk_options = $_POST['bulk_options'];
+        $bulk_options = $_POST['bulk_options'];
         
         switch($bulk_options) {
-        case 'approved':
-        
-$query = "UPDATE comments SET comment_status = '{$bulk_options}' WHERE comment_id = {$commentValueId}  ";
-        
- $update_to_approved_status = mysqli_query($connection,$query);
+        case 'approved':    
+            $query = "UPDATE comments SET comment_status = '{$bulk_options}' WHERE comment_id = {$commentValueId}  ";
+            $update_to_approved_status = mysqli_query($connection,$query);
+            confirmQuery( $update_to_approved_status);
+                
+            break;
+                
             
-confirmQuery( $update_to_approved_status);
-            
-            
-         break;
-            
-            
-              case 'unapproved':
-        
-$query = "UPDATE comments SET comment_status = '{$bulk_options}' WHERE comment_id = {$commentValueId}  ";
-        
- $update_to_unapproved_status = mysqli_query($connection,$query);
-            
-confirmQuery($update_to_unapproved_status);
-            
-            
-         break;
+        case 'unapproved':
+
+            $query = "UPDATE comments SET comment_status = '{$bulk_options}' WHERE comment_id = {$commentValueId}  ";        
+            $update_to_unapproved_status = mysqli_query($connection,$query);
+            confirmQuery($update_to_unapproved_status);
+                
+            break;
             
   
             
-               case 'delete':
-        
-$query = "DELETE FROM comments WHERE comment_id = {$commentValueId}  ";
-        
- $update_to_delete = mysqli_query($connection,$query);
-            
-confirmQuery($update_to_delete);
-            
-            
-         break;
-        
+        case 'delete':
+
+            $query = "DELETE FROM comments WHERE comment_id = {$commentValueId}  ";
+            $update_to_delete = mysqli_query($connection,$query);
+            confirmQuery($update_to_delete);
+                                    
+            break;
         
         }
-    
-    
     } 
-
-
-
 }
-
-
-
 
 ?>
 
-
-
-<form action="" method='post'>
-               
+<form action="" method='post'>               
                <table class="table table-bordered table-hover">
-               
                <div id="bulkOptionContainer" class="col-xs-4">
-
         <select class="form-control" name="bulk_options" id="">
         <option value="">Select Options</option>
         <option value="approved">Approve</option>
         <option value="unapproved">Unapprove</option>
         <option value="delete">Delete</option>
         </select>
-
         </div> 
-
             
 <div class="col-xs-4">
-
 <input type="submit" name="submit" class="btn btn-success" value="Apply">
-
  </div>
-
                 <thead>
                     <tr>
                        <th><input id="selectAllBoxes" type="checkbox"></th>
