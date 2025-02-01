@@ -11,7 +11,7 @@
     <meta name="google-site-verification" content="jI2-XP4kDnqAOkc1VFmVskmY758me53DhAIyV9zbRKw" />
 
 
-    <title>Niterria blog</title>
+    <title>Niterria</title>
     <link rel="icon" type="image/x-icon" href="/images/WhiteLogo.png">
     <!-- Bootstrap Core CSS -->
     <link href="/css/bootstrap.min.css" rel="stylesheet">

@@ -97,7 +97,7 @@ if(isset($_GET['unlike'])){
                 <p><?php echo stripslashes($post_content); ?></p>
         <?php }         
                 if(isLoggedIn()){ ?>
-                <div class="row" style="margin-left; 10px; padding-right: 10px">
+                <div class="row" style="margin-left: 10px; padding-right: 10px">
     
             <?php        if(UserLikedPost($the_post_id)){  ?>
                             <p class="pull-left"><a href="/post/<?php echo $the_post_id ?>/unlike/<?php echo $_SESSION['user_id']; ?>" >

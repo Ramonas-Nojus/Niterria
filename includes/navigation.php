@@ -2,8 +2,8 @@
 <nav class="navbar navbar-expand-lg navbar-light navbar-fixed-top" id="mainNav" style="background-color: #00BDA5; border: 0px;">
     <div class="container" style="color: white;">
       <a class="navbar-brand" href="/" >
-        <img src="/images/WhiteLogo.png" style="width: 27px; float: left;">
-        <h2>Niterria</h2>
+        <img src="/images/WhiteLogo.png" style="width: 35px; float: left; margin-right: 5px">
+        <h1>Niterria</h1>
       </a>
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation" >
         Menu

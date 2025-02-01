@@ -8,7 +8,7 @@ class Users extends Db {
         $sth = $this->connection()->prepare($sql);
         $sth->bindValue("username", $username, PDO::PARAM_STR);
         $sth->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $sth->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function editProfile($username, $image, $user_id){

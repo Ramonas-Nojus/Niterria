@@ -55,7 +55,7 @@ input[type=text], select {
         $profile_image = $_SESSION['user_image'];
       }
 
-      if(username_exists($username)){
+      if(username_exists($username) && $username != $_SESSION['username']){
         echo "<p style='text-align:center'>This username alrady exists</p>";
       } else {
 
@@ -91,10 +91,10 @@ input[type=text], select {
         <div class="card" >
           <form method="post" action="/profile" enctype="multipart/form-data">
             
-            <div class="rounded-top text-white d-flex flex-row" style="background-color: #000; height:250px; border: 3px solid width: 100%; ">
+            <div class="rounded-top text-white d-flex flex-row" style="background-color: #000; height:250px; border: 3px solid; width: 100%">
               <div>
                 <div class="image-upload" >
-                  <label for="imgInp" style="float:left; display: inline-block;">
+                  <label for="imgInp" style="float: left display inline-block">
                     <img src="/images/<?php echo $_SESSION['user_image']; ?>" id="profile_img"
                       alt="Generic placeholder image" class="img-fluid img-thumbnail mt-4 mb-2"
                       style=" width: 150px; height: 150px; object-fit: cover; z-index: 0; margin: 10px; border: solid; border-color: black; cursor:pointer">
@@ -123,7 +123,7 @@ input[type=text], select {
       </form>
           <div class="card-body p-4 text-black">
             <div class="mb-5">
-              <p class="p-4" style="font 20px;">Liked Posts:</p>
+              <p class="p-4" style="font: 20px;">Liked Posts:</p>
               <p class="p-4" style="background-color: #f8f9fa;">
                 <?php echo count($likedPostsIds); ?>
               </p>
