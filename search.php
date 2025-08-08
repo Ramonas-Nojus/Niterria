@@ -1,8 +1,8 @@
+ <?php  include "includes/header.php"; ?>
 <?php
  declare(strict_types = 1);
 
 include "includes/db.php"; ?>
- <?php  include "includes/header.php"; ?>
  <?php include "includes/class.autoload.php"; 
  
 //  use search\Search;
@@ -78,7 +78,7 @@ include "includes/db.php"; ?>
                 <hr>
                 
                 
-                <a href="/post/<?php echo $post_id; ?>">
+                <a href="post/<?php echo $post_id; ?>">
                     <img class="img-responsive" src="/images/<?php if($post_image == ""){ echo "y9DpT.jpg"; } else{echo $post_image;}?>" alt="">
                 </a>   
 

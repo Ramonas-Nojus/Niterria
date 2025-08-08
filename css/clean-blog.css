@@ -4,6 +4,17 @@
  * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-clean-blog/blob/master/LICENSE)
  */
 
+* {
+    font-family: 'Montserrat', sans-serif;
+}
+
+a:focus, a:hover {
+  color: #5329ED !important;
+  text-decoration: none !important;
+
+}
+
+
 .image-upload>input {
   display: none;
 }
@@ -38,9 +49,6 @@ a {
   transition: all 0.2s;
 }
 
-a:focus, a:hover {
-  color: #0085A1;
-}
 
 blockquote {
   font-style: italic;
@@ -400,14 +408,18 @@ footer .copyright {
 }
 
 .btn-primary {
-  background-color: #0085A1;
-  border-color: #0085A1;
+  background-color: #5329ED;
+  border-color: #5329ED;
+}
+
+.search {
+    border-radius: 25px;
 }
 
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
   color: #fff;
-  background-color: #00657b !important;
-  border-color: #00657b !important;
+  background-color: #260ED0 !important;
+  border-color: #260ED0 !important;
 }
 
 .btn-lg {

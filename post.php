@@ -1,5 +1,12 @@
-<?php  include "includes/db.php"; ?>
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+?>
+
+
  <?php  include "includes/header.php"; ?>
+<?php  include "includes/db.php"; ?>
  <?php  include "includes/class.autoload.php"; ?>
     <!-- Navigation -->
     <?php  include "includes/navigation.php"; ?>
@@ -13,13 +20,13 @@ if(isset($_GET['like'])){
     $post_id = $_GET['p_id'];
     $user_id = $_GET['like']; 
     $Likes->setLikesPost($post_id,$user_id);
-    header("Location: /post/$post_id");
+    header("Location: ./post/$post_id");
 } 
 if(isset($_GET['unlike'])){
     $post_id = $_GET['p_id'];
     $user_id = $_GET['unlike'];
     $Likes->unlikePost($post_id,$user_id);
-    header("Location: /post/$post_id");
+    header("Location: ./post/$post_id");
 
 } 
 ?>
@@ -79,7 +86,7 @@ if(isset($_GET['unlike'])){
 
     mysqli_stmt_store_result($stmt);
 
-    if(mysqli_stmt_num_rows($stmt) != 1) { header("Location: /errors/404.php"); }
+    if(mysqli_stmt_num_rows($stmt) != 1) { header("Location: ./errors/404.php"); }
 
     while(mysqli_stmt_fetch($stmt)) {
         ?>
@@ -132,7 +139,7 @@ if(isset($_GET['unlike'])){
 
         if (!empty($comment_content)) {
             $comment->setCommentsPosts($the_post_id,$comment_author_id,$comment_email,$comment_content);
-            header("Location: /post/$the_post_id");
+            header("Location: ./post/$the_post_id");
         }
     }
 
@@ -150,7 +157,7 @@ if(isset($_GET['unlike'])){
                 </div>
                 <button type="submit" name="create_comment" class="btn btn-primary">Submit</button>
             </form>
-            <?php } else { echo "you need to <a href='/login'>log in</a> to leave comment"; }  ?>
+            <?php } else { echo "you need to <a href='./login'>log in</a> to leave comment"; }  ?>
         </div>
         <hr>
                  <?php 
@@ -163,7 +170,7 @@ if(isset($_GET['unlike'])){
             if(isset($_GET['delete_comment'])){
                 $delete_comment_id = $_GET['delete_comment'];
                 $getComments->deleteCommentsPosts($delete_comment_id);
-                header("Location: /post/$the_post_id");
+                header("Location: ./post/$the_post_id");
             }
 
             $edit = FALSE;
@@ -176,7 +183,7 @@ if(isset($_GET['unlike'])){
             
                     if (!empty($comment_content)) {
                         $comment->editCommentsPosts($edit_id,$comment_content);
-                        header("Location: /post/$the_post_id");
+                        header("Location: ./post/$the_post_id");
                     }
                 }
             }
@@ -191,7 +198,7 @@ if(isset($_GET['unlike'])){
                 <!-- Comment -->
                 <div class="media" style="display: inline-block; ">
                     <a class="pull-left">
-                        <img class="media-object profilie_image" width="50px" border-radius="50%" src="/images/<?php if(empty($getComments->authorImage($author_id)['user_image'])){ echo "person-placeholder.jpg"; } else { echo $getComments->authorImage($author_id)['user_image']; }
+                        <img class="media-object profilie_image" width="50px" border-radius="50%" src="./images/<?php if(empty($getComments->authorImage($author_id)['user_image'])){ echo "person-placeholder.jpg"; } else { echo $getComments->authorImage($author_id)['user_image']; }
                         ?>" alt="">
                     </a>
                     <div class="media-body">
@@ -204,7 +211,7 @@ if(isset($_GET['unlike'])){
                                 <input type="text" style="height: 50px" value="<?php echo $comment_content; ?>" name="comment_content">
                                 <input type="submit" name="edit_comment" class="btn btn-primary" value="edit comment">
                                 <br>
-                                <a href="/post/<?php echo $the_post_id ?>">cancel</a>
+                                <a href="./post/<?php echo $the_post_id ?>">cancel</a>
                             </form>
 
                         <?php } else { ?>
@@ -217,8 +224,8 @@ if(isset($_GET['unlike'])){
                       <div class="three-dots pull-right"></div>
                         <div class="dropdown">
                             <div class="card-body p-4 text-black" style="background-color: #F5F5F5;  border: 2px solid #BAC3D5;">
-                              <a href="/post/<?php echo $the_post_id ?>/delete/<?php echo $comment_id ?>"><div>Delete</div></a>
-                              <a href="/post/<?php echo $the_post_id ?>/edit/<?php echo $comment_id ?>"><div>Edit</div></a>
+                              <a href="./post/<?php echo $the_post_id ?>/delete/<?php echo $comment_id ?>"><div>Delete</div></a>
+                              <a href="./post/<?php echo $the_post_id ?>/edit/<?php echo $comment_id ?>"><div>Edit</div></a>
                             </div>
                       </div>
                     </div>
@@ -227,7 +234,7 @@ if(isset($_GET['unlike'])){
                 </div>
 
            <?php } }  else {
-            header("Location: /");
+            header("Location: ./");
             }
                 ?>
             </div>

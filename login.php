@@ -1,5 +1,5 @@
-<?php  include "includes/db.php"; ?>
 <?php  include "includes/header.php"; ?>
+<?php  include "includes/db.php"; ?>
 <!-- Navigation -->
 
 <?php  include "includes/navigation.php"; ?>
@@ -16,12 +16,12 @@
 							<h2 class="text-center">Login</h2>
 							<div class="panel-body">
 <?php
-		checkIfUserIsLoggedInAndRedirect('/profile');
+		checkIfUserIsLoggedInAndRedirect('./profile');
 		if(ifItIsMethod('post')){
 			if(isset($_POST['username']) && isset($_POST['password'])){
 				login_user($_POST['username'], $_POST['password']);
 			}else {
-				redirect('/login');
+				redirect('./login');
 			}
 		}
 ?>
@@ -36,7 +36,8 @@
 
 									<div class="form-group">
 										<div class="input-group">
-										<span class="input-group-text" id="basic-addon1"><i class="glyphicon glyphicon-lock color-blue"></i></span>											<input name="password" type="password" class="form-control" placeholder="Enter Password">
+    										<span class="input-group-text" id="basic-addon1"><i class="glyphicon glyphicon-lock color-blue"></i></span>
+    										<input name="password" type="password" class="form-control" placeholder="Enter Password">
 										</div>
 									</div>
 

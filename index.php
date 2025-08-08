@@ -1,5 +1,6 @@
-<?php  include "includes/db.php"; ?>
+
  <?php  include "includes/header.php"; ?>
+<?php  include "includes/db.php"; ?>
  <?php include "includes/class.autoload.php"; ?>
 
     <!-- Navigation -->    
@@ -59,8 +60,8 @@
                     <hr>
                     
                     
-                    <a href="/post/<?php echo $post_id; ?>">
-                        <img class="img-responsive" src="/images/<?php if($post_image == ""){ echo "y9DpT.jpg"; } else{echo $post_image;}?>" alt="">
+                    <a href="post/<?php echo $post_id; ?>">
+                        <img style="border-radius: 25px; border: solid black 3px" class="img-responsive" src="images/<?php if($post_image == ""){ echo "y9DpT.jpg"; } else{echo $post_image;}?>" alt="">
                     </a> 
 
                     <p><span class="glyphicon glyphicon-time"></span> <?php echo $post_date ?></p>
@@ -69,7 +70,7 @@
 
                     <p><?php echo $post_subtitle ?></p>
 
-                    <a class="btn btn-primary" href="post.php?p_id=<?php echo $post_id; ?>">Read More <span class="glyphicon glyphicon-chevron-right"></span></a>
+                    <a class="btn btn-primary" style="border-radius: 25px; border: solid black 3px" href="post/<?php echo $post_id; ?>">Read More <span class="glyphicon glyphicon-chevron-right"></span></a>
                     <hr>
                 </div>
    <?php }  } ?>
@@ -85,9 +86,9 @@
             <?php 
                 for($i =1; $i <= $count; $i++) {
                     if($i == $page) {
-                        echo "<li class='page-item'><a style='background-color: #33CBC2; color: white;' href='/?page={$i}'>{$i}</a></li>";
+                        echo "<li class='page-item'><a style='background-color: #33CBC2; color: white;' href='./?page={$i}'>{$i}</a></li>";
                     } else {
-                        echo "<li class='page-item'><a class='page-link' href='/?page={$i}'>{$i}</a></li>";
+                        echo "<li class='page-item'><a class='page-link' href='./?page={$i}'>{$i}</a></li>";
                     }
                 } 
             ?>

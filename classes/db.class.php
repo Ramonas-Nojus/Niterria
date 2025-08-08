@@ -1,10 +1,10 @@
 <?php 
 
 class Db {
-    private $host = "localhost";
-    private $user = "root";
-    private $password = "";
-    private $dbName = "blog";
+    private $host = DB_HOST;
+    private $user = DB_USER;
+    private $password = DB_PASS;
+    private $dbName = DB_NAME;
 
     public function connection(){
         $dsn = "mysql:host=".$this->host.";dbname=".$this->dbName;

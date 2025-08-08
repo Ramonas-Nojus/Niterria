@@ -1,3 +1,4 @@
+
 <?php include "includes/admin_header.php";?>
     <div id="wrapper">
 
@@ -51,7 +52,7 @@
                             
                     if(!is_admin($_SESSION['username'])){
 
-                        header("Location: /");
+                        header("Location: ".BASE_URL);
                     }
 
                         $query = "SELECT * FROM posts";

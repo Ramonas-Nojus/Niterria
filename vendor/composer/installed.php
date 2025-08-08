@@ -3,7 +3,7 @@
         'name' => 'edwin/cms',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '1e602afbdcd98d80eb063cfb0e8385c154705559',
+        'reference' => '74be0b96aac22b85a53acff4bb613eae50e52dac',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'edwin/cms' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '1e602afbdcd98d80eb063cfb0e8385c154705559',
+            'reference' => '74be0b96aac22b85a53acff4bb613eae50e52dac',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

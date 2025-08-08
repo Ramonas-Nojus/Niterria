@@ -1,4 +1,5 @@
 <?php ob_start(); ?>
+<?php include "../settings-core-7189.php"; ?>
 <?php include "../includes/db.php"; ?>
 <?php include "functions.php"; ?>
 
@@ -18,7 +19,7 @@ if(isset($_SESSION['user_role'])) {
 
 } else {
 
-header("location: /");
+header("location: ".BASE_URL);
 
 
 }
@@ -43,13 +44,13 @@ header("location: /");
     <title>SB Admin - Bootstrap Admin Template</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="/admin/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?php echo BASE_URL; ?>/admin/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link href="/admin/css/sb-admin.css" rel="stylesheet">
+    <link href="<?php echo BASE_URL; ?>/admin/css/sb-admin.css" rel="stylesheet">
 
     <!-- Custom Fonts -->
-    <link href="/admin/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="<?php echo BASE_URL; ?>/admin/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -58,8 +59,8 @@ header("location: /");
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
- <link href="/admin/css/styles.css" rel="stylesheet">
- <link href="/css/admin/_variables.scss" rel="stylesheet">
+ <link href="<?php echo BASE_URL; ?>/admin/css/styles.css" rel="stylesheet">
+ <link href="<?php echo BASE_URL; ?>/css/admin/_variables.scss" rel="stylesheet">
 
  
  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -71,7 +72,7 @@ header("location: /");
 <!--   <script src="http://cdn.tinymce.com/4/tinymce.min.js"></script> -->
 
 
-<script src="/admin/js/jquery.js"></script>
+<script src="<?php echo BASE_URL; ?>/admin/js/jquery.js"></script>
 
 
  

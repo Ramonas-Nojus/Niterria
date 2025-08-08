@@ -1,6 +1,6 @@
 <?php 
 
-class Posts extends \DB {
+class Posts extends \Db {
 
     public function getPosts($page_1,$per_page){
         
@@ -90,5 +90,13 @@ class Posts extends \DB {
         $stmt = $this->connection()->prepare($sql);
         $stmt->execute([$pattern, $pattern]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+    
+    
+    public function getPopularPosts(){
+        
+        $sth  = $this->connection()->prepare("SELECT * FROM posts ORDER BY post_views_count DESC LIMIT 5");
+        $sth->execute();
+        return $sth->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
