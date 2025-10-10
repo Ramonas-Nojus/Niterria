@@ -1,84 +1,338 @@
- <?php  include "includes/header.php"; ?>
-<?php  include "includes/db.php"; ?>
- <?php include "includes/class.autoload.php"; ?>
-    <!-- Navigation -->
-    <?php  include "includes/navigation.php"; ?>
-    <!-- Page Content -->
-    <div class="container">
-        <div class="row">
-            <!-- Blog Entries Column -->
-            <div class="col-md-8">
-               <?php
+<?php
+// === Core Includes ===
+include "settings-core-7189.php";
+include "includes/db.php";
+include "includes/class.autoload.php";
+include "admin/functions.php";
 
-    if(isset($_GET['cat_id'])){
-        
-      $post_category_id  = $_GET['cat_id'];
-      $category = $_GET['category'];
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+session_start();
 
-      echo "<h1>All posts with <<<b>$category</b>>>> categorie</h1><Br>";
+function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 
-      $posts = new Posts();
-        
-    $PostsByCat = $posts->PostsByCat($post_category_id);
+// --- Get category ---
+if (!isset($_GET['cat_id'])) redirect('/');
+$cat_id = (int)$_GET['cat_id'];
+$cat_name = isset($_GET['category']) ? h($_GET['category']) : 'Category';
 
-    if(count($PostsByCat) == 0) { 
-        echo "<h1>There is no posts yet</h1>"; 
-    } else {
+// --- Config ---
+$per_page = 5;
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 
-        $per_page = 5;
+// --- Base WHERE ---
+$is_admin = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+$where = $is_admin ? "WHERE post_category_id=$cat_id" : "WHERE post_status='published' AND post_category_id=$cat_id";
 
-        if(isset($_GET['page'])) {
-            $page = $_GET['page'];
-        } else {
-            $page = "";
-        }
-        if($page == "" || $page == 1) {
-            $page_1 = 0;
-        } else {
-            $page_1 = ($page * $per_page) - $per_page;
-        }
-        $count  = ceil(count($PostsByCat) /$per_page);
+// --- Count ---
+$count_sql = "SELECT COUNT(*) AS c FROM posts $where";
+$count_rs = mysqli_query($connection, $count_sql);
+$total_posts = $count_rs ? (int)mysqli_fetch_assoc($count_rs)['c'] : 0;
+$total_pages = max(1, ceil($total_posts / $per_page));
+if ($page > $total_pages) $page = $total_pages;
+$offset = ($page - 1) * $per_page;
 
-    foreach($PostsByCat as $row){
-        $post_id = $row['post_id'];
-        $post_title = $row['post_title'];
-        $post_date = $row['post_date'];
-        $post_image = $row['post_image'];
-        $post_status = $row['post_status'];
-        $post_subtitle = $row['post_subtitle'];
+// --- Posts ---
+$posts_sql = "SELECT post_id, post_title, post_date, post_image, post_subtitle FROM posts $where ORDER BY post_id DESC LIMIT $offset, $per_page";
+$posts_rs = mysqli_query($connection, $posts_sql);
+$posts = $posts_rs ? mysqli_fetch_all($posts_rs, MYSQLI_ASSOC) : [];
 
-        ?>
-        <h2>
-                    <a href="/post/<?php echo $post_id; ?>"><?php echo $post_title ?></a>
-                </h2>
-                <p><span class="glyphicon glyphicon-time"></span> <?php echo $post_date ?></p>
-                <hr>
-                <img class="img-responsive" src="/images/<?php if($post_image == ""){ echo "y9DpT.jpg"; } else{echo $post_image;}?>" alt="">
-                <hr>
-                <p><?php echo $post_subtitle ?></p>
-                <a class="btn btn-primary" href="/post/<?php echo $post_id; ?>">Read More <span class="glyphicon glyphicon-chevron-right"></span></a>
-                <hr>
-                <?php 
-    }?>
+// --- Sidebar Data ---
+$cats = [];
+if ($cats_rs = mysqli_query($connection, "SELECT cat_id, cat_title FROM categories ORDER BY cat_title ASC"))
+  $cats = mysqli_fetch_all($cats_rs, MYSQLI_ASSOC);
 
-        <ul class="pager">
-            <?php 
-                for($i =1; $i <= $count; $i++) {
-                    if($i == $page) {
-                        echo "<li class='page-item'><a style='background-color: #33CBC2; color: white;' href='/profile?page={$i}'>{$i}</a></li>";
-                    } else {
-                        echo "<li class='page-item'><a class='page-link' href='/profile?page={$i}'>{$i}</a></li>";
-                    }
-                } 
-            ?>
-        </ul>
-
-<?php } } else {
-    redirect('/');
-    }
+$popular = [];
+if ($pop_rs = mysqli_query($connection, "SELECT post_id, post_title, post_date, post_image FROM posts WHERE post_status='published' ORDER BY post_id DESC LIMIT 5"))
+  $popular = mysqli_fetch_all($pop_rs, MYSQLI_ASSOC);
 ?>
-                </div>
-            <?php include "includes/sidebar.php";?>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title><?= $cat_name ?> — Niterria</title>
+<meta name="description" content="All posts in <?= $cat_name ?> — Niterria Tech Journal." />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0D14; --fg:#E9EEF6; --muted:#A8B1C0; --link:#DDE3F2;
+  --glass:rgba(255,255,255,.06); --glass2:rgba(255,255,255,.10);
+  --stroke:rgba(255,255,255,.12);
+  --p:#260ED0; --s:#5329ED; --t:#00D5C9;
+  --r:22px; --shadow:0 28px 80px -20px rgba(83,41,237,.45);
+}
+*{box-sizing:border-box}
+body{margin:0;color:var(--fg);font-family:Manrope,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:
+  radial-gradient(70% 90% at 10% -10%,color-mix(in oklab,var(--p) 35%,transparent),transparent 60%),
+  radial-gradient(60% 60% at 90% 0%,color-mix(in oklab,var(--s) 40%,transparent),transparent 60%),
+  linear-gradient(180deg,#0B0A15 0%,var(--bg) 60%);
+background-attachment:fixed}
+a{color:var(--link);text-decoration:none}
+.wrap{max-width:1260px;margin:0 auto;padding:0 22px}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:30;backdrop-filter:saturate(180%) blur(12px);background:color-mix(in oklab,var(--p) 12%,transparent);border-bottom:1px solid var(--stroke)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.brand{display:flex;align-items:center;gap:12px;color:var(--fg)}
+.badge{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;border:1px solid var(--stroke);background:linear-gradient(135deg,var(--p),var(--s));box-shadow:var(--shadow)}
+.bt small{display:block;letter-spacing:.18em;color:#C9D2E1;opacity:.85;text-transform:uppercase;font-size:11px;line-height:1}
+.bt b{display:block;font-weight:800;line-height:1.1}
+.nav-links{display:flex;gap:18px;align-items:center}
+.ghost{border:1px solid var(--stroke);background:var(--glass);padding:10px 14px;border-radius:14px}
+
+/* HERO */
+.hero{padding:70px 0 30px}
+.hero-title{font-family:'Playfair Display',serif;font-size:42px;line-height:1.12;margin:6px 0 0}
+.fade{background:linear-gradient(135deg,var(--p),var(--s));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:minmax(0,2fr)minmax(300px,1fr);gap:24px}
+@media(max-width:980px){.grid{grid-template-columns:1fr}}
+
+/* POSTS — FIXED */
+.list {
+  display: grid;
+  gap: 22px;
+}
+.card {
+  border: 1px solid var(--stroke);
+  background: var(--glass);
+  border-radius: 22px;
+  overflow: hidden;
+  transition: .25s box-shadow, .25s transform;
+  display: flex;
+  flex-direction: column;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 60px -20px rgba(83,41,237,.55);
+}
+
+/* unified two-column layout */
+.post {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  align-items: stretch;
+  width: 100%;
+}
+.post .img-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--glass2);
+}
+.post .img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 16/10;
+  display: block;
+  transition: transform .4s ease;
+}
+.post:hover .img-wrap img {
+  transform: scale(1.05);
+}
+
+.post .b {
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+}
+
+.meta {
+  color: #B6C0CF;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.post h2 {
+  margin: 6px 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.post p {
+  color: var(--muted);
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+@media(max-width: 900px) {
+  .post {
+    grid-template-columns: 1fr;
+  }
+  .post .img-wrap {
+    height: 230px;
+  }
+}
+
+.pager{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--stroke);background:var(--glass);border-radius:16px;padding:8px;margin-top:10px}
+.pages{display:flex;gap:8px}
+.page{min-width:38px;height:38px;display:grid;place-items:center;border-radius:12px;border:1px solid var(--stroke);background:var(--glass)}
+.page.active{background:linear-gradient(135deg,var(--p),var(--s));font-weight:800}
+
+/* SIDEBAR */
+aside{position:sticky;top:92px;height:max-content}
+.box{border:1px solid var(--stroke);background:var(--glass);border-radius:22px;padding:16px;margin-bottom:16px}
+.box h4{margin:4px 0 10px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#D8DFF0}
+.search{display:flex;gap:8px}
+.search input{flex:1;border-radius:14px;padding:12px 14px;background:var(--glass2);border:1px solid var(--stroke);color:var(--fg)}
+.search button{border:1px solid var(--stroke);background:linear-gradient(135deg,var(--p),var(--s));color:white;border-radius:14px;padding:12px 14px;cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--stroke);background:var(--glass2);padding:8px 12px;border-radius:12px;font-size:14px}
+.popular{display:grid;gap:10px}
+.popular a{display:flex;gap:10px;color:var(--fg)}
+.popular img{width:110px;height:78px;object-fit:cover;border-radius:10px;border:1px solid var(--stroke)}
+
+footer{border-top:1px solid var(--stroke);background:color-mix(in oklab,var(--s) 10%,transparent)}
+.foot{display:grid;grid-template-columns:1fr auto;gap:12px;padding:22px 0}
+@media(max-width:800px){.foot{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+    <div class="wrap nav-in">
+        <!-- Brand -->
+        <a class="brand" href="<?= defined('BASE_URL') ? BASE_URL : '/' ?>">
+        <div class="badge" aria-hidden="true" style="background:none; border:none; box-shadow:none; padding:0;">
+            <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/WhiteLogo.png"
+                alt="Niterria logo"
+                style="height:42px; width:auto; display:block;">
         </div>
-    <hr>
-<?php include "includes/footer.php";?>
+        <div class="bt">
+            <small>Niterria</small><b>Tech Journal</b>
+        </div>
+        </a>
+
+        <!-- Navigation Links -->
+        <div class="nav-links">
+        <a href="<?= defined('BASE_URL') ? BASE_URL : '/' ?>">Home</a>
+        <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/about">About</a>
+
+        <?php if(isLoggedIn()): ?>
+            <a href="<?= BASE_URL ?>/includes/logout.php">Logout</a>
+            <a href="<?= BASE_URL ?>/profile">Profile</a>
+
+            <?php if(is_admin()): ?>
+                <a href="<?= BASE_URL ?>/admin">Admin</a>
+            <?php endif; ?>
+
+        <?php else: ?>
+            <a href="<?= BASE_URL ?>/registration">Register</a>
+            <a href="<?= BASE_URL ?>/login" class="ghost">Login</a>
+        <?php endif; ?>
+        </div>
+    </div>
+    </div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-title">All posts in <span class="fade"><?= $cat_name ?></span>.</div>
+  </div>
+</section>
+
+<!-- MAIN GRID -->
+<section id="journal" class="wrap grid">
+  <div>
+    <div class="list">
+      <?php if ($total_posts < 1): ?>
+        <div class="card" style="padding:24px;text-align:center">No posts found in this category.</div>
+      <?php else: ?>
+        <?php foreach ($posts as $row): 
+          $img = $row['post_image'] && file_exists("images/".$row['post_image']) ? h($row['post_image']) : "y9DpT.jpg";
+        ?>
+          <article class="card post">
+            <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$row['post_id'] ?>">
+              <div class="img-wrap">
+                <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $img ?>" alt="">
+              </div>
+            </a>
+            <div class="b">
+              <div class="meta"><?= h(date('M j, Y', strtotime($row['post_date']))) ?></div>
+              <h2><a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$row['post_id'] ?>"><?= h($row['post_title']) ?></a></h2>
+              <p><?= strip_tags($row['post_subtitle']) ?></p>
+              <div style="margin-top:10px"><a class="ghost" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$row['post_id'] ?>">Read More →</a></div>
+            </div>
+          </article>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    </div>
+
+    <!-- Pagination -->
+    <?php if ($total_pages > 1): ?>
+      <div class="pager">
+        <?php $prev = max(1, $page-1); $next = min($total_pages, $page+1); ?>
+        <a class="ghost" href="?cat_id=<?= $cat_id ?>&category=<?= urlencode($cat_name) ?>&page=<?= $prev ?>">← Prev</a>
+        <div class="pages">
+          <?php for($i=1;$i<=$total_pages;$i++): ?>
+            <a class="page <?= $i==$page?'active':'' ?>" href="?cat_id=<?= $cat_id ?>&category=<?= urlencode($cat_name) ?>&page=<?= $i ?>"><?= $i ?></a>
+          <?php endfor; ?>
+        </div>
+        <a class="ghost" href="?cat_id=<?= $cat_id ?>&category=<?= urlencode($cat_name) ?>&page=<?= $next ?>">Next →</a>
+      </div>
+    <?php endif; ?>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside>
+    <!-- Search -->
+    <div class="box">
+      <h4>Search</h4>
+      <form method="get" action="/search.php">
+        <div class="search">
+          <input name="search" placeholder="Find something good…" />
+          <button name="submit" type="submit">Search</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Categories -->
+    <div class="box">
+      <h4>Categories</h4>
+      <div class="chips">
+        <?php foreach ($cats as $c): ?>
+          <a class="chip" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/category/<?= urlencode($c['cat_title']) ?>/<?= (int)$c['cat_id'] ?>"><?= h($c['cat_title']) ?></a>
+        <?php endforeach; ?>
+      </div>
+    </div>
+
+    <!-- Popular -->
+    <div class="box">
+      <h4>Popular</h4>
+      <div class="popular">
+        <?php foreach ($popular as $pp): 
+          $pimg = $pp['post_image'] && file_exists("images/".$pp['post_image']) ? h($pp['post_image']) : "y9DpT.jpg";
+        ?>
+          <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$pp['post_id'] ?>">
+            <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $pimg ?>" alt="">
+            <div>
+              <div style="font-weight:700;line-height:1.25;margin-bottom:4px"><?= h($pp['post_title']) ?></div>
+              <div style="color:#AEB6C7;font-size:12px"><?= h(date('M Y', strtotime($pp['post_date']))) ?></div>
+            </div>
+          </a>
+        <?php endforeach; ?>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap foot">
+    <div style="color:#B8C2D2;font-size:14px">© <?= date('Y') ?> Niterria — Built with care.</div>
+  </div>
+</footer>
+</body>
+</html>

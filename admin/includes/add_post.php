@@ -82,5 +82,25 @@
 </form>
 
 <script>
-        CKEDITOR.replace('long_desc');
-    </script>
+const form = document.querySelector('form');
+
+CKEDITOR.replace('long_desc');
+
+CKEDITOR.on('instanceReady', function(evt) {
+    const editor = evt.editor;
+
+    // Load saved content
+    const saved = localStorage.getItem('long_desc');
+    if(saved) editor.setData(saved);
+
+    // Save on every change
+    editor.on('change', function() {
+        localStorage.setItem('long_desc', editor.getData());
+    });
+
+    // Clear localStorage on submit
+    form.addEventListener('submit', function() {
+        localStorage.removeItem('long_desc');
+    });
+});
+</script>

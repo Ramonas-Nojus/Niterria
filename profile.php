@@ -1,208 +1,300 @@
-<?php  include "includes/header.php";  ?>
-<?php  include "includes/navigation.php"; ?>
-<?php include "includes/class.autoload.php"; ?>
-<?php include "includes/db.php"; ?>
-
-
-<style>
-
-input[type=submit]{
-  background-color: white;
-  border: 3px solid black;
-  border-radius: 8px;
-  color: Black;
-  padding: 3px 16px;
-  text-decoration: none;
-  margin: 4px 2px;
-  cursor: pointer;
-
-}
-
-input[type=submit]:hover{
-  background-color: grey;
-}
-
-input[type=text], select {
-  width: 60%;
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.image-upload>input {
-  display: none;
-}
-
-</style>
-
 <?php
-    $edit = False;
 
-    $user_id = $_SESSION['user_id'];
+// Core includes (backend only)
+include "settings-core-7189.php";
+include "includes/db.php";
+include "admin/functions.php";
+include "includes/class.autoload.php"; // Users, Posts
 
-    if(isset($_GET['edit'])){
-        $edit = $_GET['edit'];
-    } 
+session_start();
+if(!isset($_SESSION['user_id'])){ header('Location: ./login'); exit; }
 
-    if(isset($_POST['edit_profile'])){
-      $username = $_POST['username'];
-      $profile_image = $_FILES['profile_image']['name'];
-      $image_tmp = $_FILES['profile_image']['tmp_name'];
+function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 
-      if(!empty($profile_image)){
-        move_uploaded_file($image_tmp, "images/$profile_image");
-      } else {
-        $profile_image = $_SESSION['user_image'];
-      }
+$user_id = (int)$_SESSION['user_id'];
+$edit = isset($_GET['edit']) && $_GET['edit'];
 
-      if(username_exists($username) && $username != $_SESSION['username']){
-        echo "<p style='text-align:center'>This username alrady exists</p>";
-      } else {
+// Handle profile edit
+if(isset($_POST['edit_profile'])){
+  $username = trim($_POST['username'] ?? '');
+  $profile_image = $_FILES['profile_image']['name'] ?? '';
+  $image_tmp = $_FILES['profile_image']['tmp_name'] ?? '';
 
-      $user = new Users();
-      $user->editProfile($username, $profile_image, $user_id);
+  if(!empty($profile_image)){
+    @move_uploaded_file($image_tmp, __DIR__ . "/images/".$profile_image);
+  } else {
+    $profile_image = $_SESSION['user_image'] ?? '';
+  }
 
-      $_SESSION['username'] = $username;
-      $_SESSION['user_image'] = $profile_image;
-      }
-    }
+  if(username_exists($username) && $username !== ($_SESSION['username'] ?? '')){
+    $username_error = "This username already exists";
+  } else {
+    $user = new Users();
+    $user->editProfile($username, $profile_image, $user_id);
+    $_SESSION['username'] = $username;
+    $_SESSION['user_image'] = $profile_image;
+    header('Location: ./profile'); exit;
+  }
+}
+
+// Liked posts list
+$posts = new Posts();
+$likedPostsIds = $posts->getLikedPostsIds($user_id) ?: [];
+$post_ids = array_map(fn($x)=> (int)$x['post_id'], $likedPostsIds);
+$post_id_list = $post_ids ? implode(',', $post_ids) : '0';
+
+$per_page = 6;
+$page = isset($_GET['page']) ? max(1,(int)$_GET['page']) : 1;
+$page_1 = ($page-1)*$per_page;
+$likedPosts = $posts->getLikedPosts($page_1, $per_page, $post_id_list) ?: [];
+$total_pages = max(1, (int)ceil((count($likedPostsIds) ?: 0) / $per_page));
 ?>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Profile — <?= h($_SESSION['username']) ?> — Niterria</title>
+  <meta name="description" content="Your Niterria profile. Edit avatar, manage username, and view liked posts." />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#0A0D14; --fg:#E9EEF6; --muted:#A8B1C0; --link:#DDE3F2; --glass:rgba(255,255,255,.06); --glass2:rgba(255,255,255,.10); --stroke:rgba(255,255,255,.12); --p:#260ED0; --s:#5329ED; --t:#00D5C9; --r:22px; --shadow:0 28px 80px -20px rgba(83,41,237,.45);} 
+    *{box-sizing:border-box}
+    body{margin:0;color:var(--fg);font-family:Manrope,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(70% 90% at 10% -10%, color-mix(in oklab, var(--p) 35%, transparent), transparent 60%),radial-gradient(60% 60% at 90% 0%, color-mix(in oklab, var(--s) 40%, transparent), transparent 60%),linear-gradient(180deg,#0B0A15,var(--bg) 60%);background-attachment:fixed}
+    a{color:var(--link);text-decoration:none}
+    .wrap{max-width:1260px;margin:0 auto;padding:0 22px}
 
-<?php 
-                $post_ids = [];
+    /* NAV */
+    .nav{position:sticky;top:0;z-index:30;backdrop-filter:saturate(180%) blur(12px);background:color-mix(in oklab, var(--p) 12%, transparent);border-bottom:1px solid var(--stroke)}
+    .nav-in{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:12px;color:var(--fg)}
+    .badge{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;border:1px solid var(--stroke);background:linear-gradient(135deg,var(--p),var(--s));box-shadow:var(--shadow)}
+    .bt small{display:block;letter-spacing:.18em;color:#C9D2E1;opacity:.85;text-transform:uppercase;font-size:11px;line-height:1}
+    .bt b{display:block;font-weight:800;line-height:1.1;color:var(--fg)}
+    .nav-links{display:flex;gap:18px;align-items:center}
+    .ghost{border:1px solid var(--stroke);background:var(--glass);padding:10px 14px;border-radius:14px}
 
-                $posts = new Posts();
-                
-                $likedPostsIds = $posts->getLikedPostsIds($user_id);
+    /* PROFILE HEADER */
+    .hero{padding:40px 0 10px}
+    .profile-card{border:1px solid var(--stroke);background:var(--glass);border-radius:24px;overflow:hidden;box-shadow:var(--shadow)}
+    .cover{height:180px;background:radial-gradient(120% 120% at 10% 0%, rgba(83,41,237,.55), transparent 60%), radial-gradient(120% 120% at 110% 100%, rgba(38,14,208,.55), transparent 60%)}
+    .profile-in{display:flex;gap:18px;align-items:flex-end;padding:0 18px 18px}
+    .avatar-wrap{position:relative;width:140px;height:140px;margin-top:-70px;border-radius:24px;border:1px solid var(--stroke);background:var(--glass);display:grid;place-items:center;overflow:hidden}
+    .avatar{width:100%;height:100%;object-fit:cover;display:block}
+    .edit-badge{position:absolute;bottom:8px;right:8px;background:linear-gradient(135deg,var(--p),var(--s));border:1px solid var(--stroke);color:#fff;border-radius:12px;padding:6px 10px;font-size:12px}
+    .u-block{display:flex;flex-direction:column;gap:6px}
+    .u-name{font-family:'Playfair Display',serif;font-size:30px;margin:0}
+    .hint{color:#AFC7FF;font-size:13px}
 
-                foreach($likedPostsIds as $x){
-                    array_push($post_ids, $x['post_id']);
-                }
+    .profile-actions{margin-left:auto;display:flex;gap:10px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:14px;border:1px solid var(--stroke);cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg,var(--p),var(--s));color:white;font-weight:800}
 
-                $post_id_list = implode(",", $post_ids);
-?>
+    /* GRID */
+    .grid{display:grid;grid-template-columns:2fr 1fr;gap:22px;padding:18px 0 50px}
+    @media(max-width:980px){.grid{grid-template-columns:1fr}}
 
-<script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
-<section class="h-100">
-  <div class="container py-5 h-100" >
-    <div class="row d-flex justify-content-center align-items-center h-100">
-      <div class="col col-lg-9 col-xl-9">
-        <div class="card" style="border: 4px solid">
-        <div class="card" >
-          <form method="post" action="/profile" enctype="multipart/form-data">
-            
-            <div class="rounded-top text-white d-flex flex-row" style="background-color: #000; height:250px; border: 3px solid; width: 100%">
-              <div>
-                <div class="image-upload" >
-                  <label for="imgInp" style="float: left display inline-block">
-                    <img src="/images/<?php echo $_SESSION['user_image']; ?>" id="profile_img"
-                      alt="Generic placeholder image" class="img-fluid img-thumbnail mt-4 mb-2"
-                      style=" width: 150px; height: 150px; object-fit: cover; z-index: 0; margin: 10px; border: solid; border-color: black; cursor:pointer">
-                  </label>
-                  <?php  if($edit) {?>
-                    <input name="profile_image" id="imgInp" type="file" valueaccept="image/*">
-                  <?php } ?>
-                </div>
-              </div>
-            <div class="ms-3" style="padding-top: 70px; margin-left: 15px;">
-            <?php  if($edit) {?>
-                    <input style="color: black;" type="text" value="<?php echo $_SESSION['username']; ?>" name="username">
-                    <input type='submit' name="edit_profile">
-                    <a href="/profile" style="color: white;">Cancel</a>
-            <?php  } else {?>
-              <h3 style="color: white;"><?php echo $_SESSION['username'] ?>
-                <a href="/profile.php?edit=true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-pencil-fill" viewBox="0 0 16 16" style="margin-left: 10px; color: white;">
-                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
-                  </svg>
-                </a>
-              </h3>
-              <?php } ?>
-            </div>
+    /* LIKED POSTS */
+    .panel{border:1px solid var(--stroke);background:var(--glass);border-radius:22px;padding:16px}
+    .panel h3{margin:0 0 10px;font-size:14px;letter-spacing:.18em;text-transform:uppercase;color:#D8DFF0}
+    .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    @media(max-width:900px){.gallery{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:560px){.gallery{grid-template-columns:1fr}}
+    .tile{border:1px solid var(--stroke);background:var(--glass);border-radius:16px;overflow:hidden;transition:.25s transform,.25s box-shadow}
+    .tile:hover{transform:translateY(-3px);box-shadow:0 18px 50px -20px rgba(83,41,237,.55)}
+    .tile img{width:100%;height:160px;object-fit:cover;display:block}
+    .tile .t{padding:10px}
+    .tile .tt{font-weight:700;line-height:1.3}
+    .tile .md{color:#AEB6C7;font-size:12px;margin-top:4px}
+
+    .pager{margin-top:14px;display:flex;justify-content:center;gap:8px}
+    .page{min-width:38px;height:38px;display:grid;place-items:center;border-radius:12px;border:1px solid var(--stroke);background:var(--glass)}
+    .page.active{background:linear-gradient(135deg,var(--p),var(--s));font-weight:800}
+
+    /* SIDEBAR */
+    aside{position:sticky;top:92px;height:max-content}
+    .box{border:1px solid var(--stroke);background:var(--glass);border-radius:22px;padding:16px;margin-bottom:16px}
+    .box h4{margin:4px 0 10px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#D8DFF0}
+    .stat{font-size:32px;font-weight:800}
+
+    /* FOOTER */
+    footer{border-top:1px solid var(--stroke);background:color-mix(in oklab, var(--s) 10%, transparent)}
+    .foot{display:grid;grid-template-columns:1fr auto;gap:12px;padding:22px 0}
+    @media(max-width:800px){.foot{grid-template-columns:1fr}}
+    .icons{display:flex;gap:12px}
+    .icon{width:42px;height:42px;border-radius:14px;background:var(--glass);border:1px solid var(--stroke);display:grid;place-items:center}
+
+    /* BACK TO TOP */
+    .to-top{position:fixed;right:18px;bottom:18px;width:48px;height:48px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--stroke);background:linear-gradient(135deg,var(--p),var(--s));color:white;box-shadow:var(--shadow);opacity:0;pointer-events:none;transform:translateY(10px);transition:.25s}
+    .to-top.show{opacity:1;pointer-events:auto;transform:translateY(0)}
+
+    /* FORMS */
+    .edit-row{display:flex;gap:8px;align-items:center}
+    .inp{border:1px solid var(--stroke);background:var(--glass2);color:var(--fg);border-radius:12px;padding:10px 12px}
+    .file{display:none}
+    .error{color:#FF99A1;font-size:13px;margin-top:6px}
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+ <div class="nav">
+    <div class="wrap nav-in">
+        <!-- Brand -->
+        <a class="brand" href="<?= defined('BASE_URL') ? BASE_URL : '/' ?>">
+        <div class="badge" aria-hidden="true" style="background:none; border:none; box-shadow:none; padding:0;">
+            <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/WhiteLogo.png"
+                alt="Niterria logo"
+                style="height:42px; width:auto; display:block;">
         </div>
-      </form>
-          <div class="card-body p-4 text-black">
-            <div class="mb-5">
-              <p class="p-4" style="font: 20px;">Liked Posts:</p>
-              <p class="p-4" style="background-color: #f8f9fa;">
-                <?php echo count($likedPostsIds); ?>
-              </p>
-            </div>
+        <div class="bt">
+            <small>Niterria</small><b>Tech Journal</b>
+        </div>
+        </a>
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <p class="lead fw-normal mb-0"></p>
+        <!-- Navigation Links -->
+        <div class="nav-links">
+        <a href="<?= defined('BASE_URL') ? BASE_URL : '/' ?>">Home</a>
+        <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/about">About</a>
+
+        <?php if(isLoggedIn()): ?>
+            <a href="<?= BASE_URL ?>/includes/logout.php">Logout</a>
+            <a href="<?= BASE_URL ?>/profile">Profile</a>
+
+            <?php if(is_admin()): ?>
+                <a href="<?= BASE_URL ?>/admin">Admin</a>
+            <?php endif; ?>
+
+        <?php else: ?>
+            <a href="<?= BASE_URL ?>/registration">Register</a>
+            <a href="<?= BASE_URL ?>/login" class="ghost">Login</a>
+        <?php endif; ?>
+
+        </div>
+    </div>
+    </div>
+
+  <!-- PROFILE HERO -->
+  <section class="hero">
+    <div class="wrap profile-card">
+      <div class="cover"></div>
+      <div class="profile-in">
+        <label class="avatar-wrap" title="Change avatar">
+          <img id="profile_img" class="avatar" src="<?= (defined('BASE_URL') ? BASE_URL : '') ?>/images/<?= h($_SESSION['user_image'] ?? 'person-placeholder.jpg') ?>" alt="avatar">
+          <?php if($edit): ?>
+            <span class="edit-badge">Change</span>
+          <?php endif; ?>
+          <?php if($edit): ?>
+            <input id="imgInp" class="file" type="file" name="profile_image" form="editForm" accept="image/*" />
+          <?php endif; ?>
+        </label>
+
+        <div class="u-block">
+          <?php if($edit): ?>
+            <form id="editForm" method="post" action="<?= defined('BASE_URL') ? BASE_URL : '' ?>/profile" enctype="multipart/form-data" class="edit-row">
+              <input class="inp" type="text" name="username" value="<?= h($_SESSION['username']) ?>" required>
+              <button class="btn primary" type="submit" name="edit_profile">Save</button>
+              <a class="btn" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/profile">Cancel</a>
+            </form>
+            <?php if(!empty($username_error)): ?><div class="error"><?= h($username_error) ?></div><?php endif; ?>
+            <div class="hint">Update your display name and avatar.</div>
+          <?php else: ?>
+            <h1 class="u-name"><?= h($_SESSION['username']) ?>
+              <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/profile.php?edit=true" style="margin-left:10px">✏️</a>
+            </h1>
+            <div class="hint">Member since <span style="opacity:.8">—</span></div>
+          <?php endif; ?>
         </div>
 
-           <?php
-                 $per_page = 5;
-
-                if(isset($_GET['page'])) {
-                  $page = $_GET['page'];
-                } else {
-                  $page = "";
-                }
-                if($page == "" || $page == 1) {
-                  $page_1 = 0;
-                } else {
-                  $page_1 = ($page * $per_page) - $per_page;
-                }
-
-                $likedPosts = $posts->getLikedPosts($page_1, $per_page, $post_id_list);
-
-                $count  = ceil(count($likedPostsIds) /$per_page);
-
-                foreach($likedPosts as $x){
-                    $post_id = $x['post_id'];
-                    $post_title = $x['post_title'];
-                    $post_date = $x['post_date'];
-                    $post_image = $x['post_image'];
-                    $post_content = $x['post_content'];
-                    $post_status = $x['post_status'];
-                    $post_subtitle = $x['post_subtitle'];
-            ?>
-            <div class="d-flex justify-content-center" style="width: 100%;">
-                <div class="col-md-10 mx-auto">
-                <div class="post-preview">
-                  <a href="/post/<?php echo $post_id; ?>">
-                    <h2 class="post-title">
-                      <?php echo $post_title; ?>
-                    </h2>
-                    <img src="images/<?php echo $post_image; ?>" style="width:100%; border: 4px solid; border-radius: 3px;">
-                    <h2 class="post-subtitle">
-                      <?php echo $post_subtitle ?>
-                    </h2>
-                  </a>
-                  <p class="post-meta">Posted on <?php echo $post_date; ?></p>
-                </div>
-              <hr>
-            </div>
-            </div>
-            <?php } ?>
-            <ul class="pager">
-
-            <?php 
-                for($i =1; $i <= $count; $i++) {
-                    if($i == $page) {
-                        echo "<li class='page-item'><a style='background-color: #33CBC2; color: white;' href='/profile?page={$i}'>{$i}</a></li>";
-                    } else {
-                            echo "<li class='page-item'><a class='page-link' href='/profile?page={$i}'>{$i}</a></li>";
-                    }
-                } 
-            ?>
-              </ul>
-            </div>
-          </div>
+        <div class="profile-actions">
+          <a class="btn" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/profile">Profile</a>
+          <a class="btn" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/settings">Settings</a>
         </div>
       </div>
     </div>
-</section>
-<script>
-    imgInp.onchange = evt => {
-        const [file] = imgInp.files
-        if (file) {
-            profile_img.src = URL.createObjectURL(file)
-        }
-    };
-</script>
-<?php  include("includes/footer.php") ?>
+  </section>
+
+  <!-- GRID -->
+  <section class="wrap grid">
+    <!-- LEFT: Liked posts -->
+    <div>
+      <div class="panel">
+        <h3>Liked Posts</h3>
+        <div class="gallery">
+          <?php if(!$post_ids): ?>
+            <div class="tile" style="grid-column:1/-1;padding:16px">You haven't liked any posts yet.</div>
+          <?php else: ?>
+            <?php foreach($likedPosts as $x): $pid=(int)$x['post_id']; ?>
+              <a class="tile" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= $pid ?>">
+                <img src="<?= (defined('BASE_URL') ? BASE_URL : '') ?>/images/<?= $x['post_image'] ? h($x['post_image']) : 'y9DpT.jpg' ?>" alt="">
+                <div class="t">
+                  <div class="tt"><?= h($x['post_title']) ?></div>
+                  <div class="md"><?= h(date('M j, Y', strtotime($x['post_date']))) ?></div>
+                </div>
+              </a>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </div>
+
+        <?php if($total_pages>1): ?>
+        <div class="pager">
+          <?php for($i=1;$i<=$total_pages;$i++): ?>
+            <a class="page <?= $i==$page ? 'active' : '' ?>" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/profile?page=<?= $i ?>"><?= $i ?></a>
+          <?php endfor; ?>
+        </div>
+        <?php endif; ?>
+      </div>
+    </div>
+
+    <!-- RIGHT: Stats / Shortcuts -->
+    <aside>
+      <div class="box">
+        <h4>Stats</h4>
+        <div style="display:flex;gap:18px">
+          <div><div class="stat"><?= count($likedPostsIds) ?></div><div style="color:#AEB6C7">Likes</div></div>
+          <div><div class="stat">—</div><div style="color:#AEB6C7">Comments</div></div>
+        </div>
+      </div>
+
+      <div class="box">
+        <h4>Shortcuts</h4>
+        <div style="display:grid;gap:10px">
+          <a class="ghost" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/">Explore Posts →</a>
+          <a class="ghost" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/profile.php?edit=true">Edit Profile →</a>
+          <a class="ghost" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/includes/logout.php">Logout →</a>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="wrap foot">
+      <div style="color:#B8C2D2;font-size:14px">© <?= date('Y') ?> Niterria — Built with care.</div>
+      <div class="icons">
+        <a class="icon" href="https://twitter.com/NiterriaBlog" target="_blank" rel="noopener" aria-label="Twitter">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z"/></svg>
+        </a>
+        <a class="icon" href="https://www.facebook.com/profile.php?id=100091290586238" target="_blank" rel="noopener" aria-label="Facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"/></svg>
+        </a>
+        <a class="icon" href="https://www.pinterest.com/niterriablog/" target="_blank" rel="noopener" aria-label="Pinterest">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 0 0-2.915 15.452c-.07-.633-.134-1.606.027-2.297.146-.625.938-3.977.938-3.977s-.239-.479-.239-1.187c0-1.113.645-1.943 1.448-1.943.682 0 1.012.512 1.012 1.127 0 .686-.437 1.712-.663 2.663-.188.796.4 1.446 1.185 1.446 1.422 0 2.515-1.5 2.515-3.664 0-1.915-1.377-3.254-3.342-3.254-2.276 0-3.612 1.707-3.612 3.471 0 .688.265 1.425.595 1.826a.24.24 0 0 1 .056.23c-.061.252-.196.796-.222.907-.035.146-.116.177-.268.107-1-.465-1.624-1.926-1.624-3.1 0-2.523 1.834-4.84 5.286-4.84 2.775 0 4.932 1.977 4.932 4.62 0 2.757-1.739 4.976-4.151 4.976-.811 0-1.573-.421-1.834-.919l-.498 1.902c-.181.695-.669 1.566-.995 2.097A8 8 0 1 0 8 0z"/></svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to top button -->
+  <button id="toTop" class="to-top" aria-label="Back to top" title="Back to top">↑</button>
+  <script>
+    const toTop = document.getElementById('toTop');
+    window.addEventListener('scroll', () => { if (window.scrollY > 280) toTop.classList.add('show'); else toTop.classList.remove('show'); });
+    toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // Avatar preview
+    const file = document.getElementById('imgInp');
+    const img = document.getElementById('profile_img');
+    if(file){ file.addEventListener('change', (e)=>{ const f=e.target.files?.[0]; if(!f) return; const url=URL.createObjectURL(f); img.src=url; }); }
+  </script>
+</body>
+</html>
