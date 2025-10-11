@@ -223,8 +223,10 @@ $total_pages = max(1, (int)ceil((count($likedPostsIds) ?: 0) / $per_page));
           <?php if(!$post_ids): ?>
             <div class="tile" style="grid-column:1/-1;padding:16px">You haven't liked any posts yet.</div>
           <?php else: ?>
-            <?php foreach($likedPosts as $x): $pid=(int)$x['post_id']; ?>
-              <a class="tile" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= $pid ?>">
+            <?php foreach($likedPosts as $x): $pid=(int)$x['post_id']; 
+              $post_slug = slugify($x['post_title']);
+            ?>
+              <a class="tile" href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $pid ?>">
                 <img src="<?= (defined('BASE_URL') ? BASE_URL : '') ?>/images/<?= $x['post_image'] ? h($x['post_image']) : 'y9DpT.jpg' ?>" alt="">
                 <div class="t">
                   <div class="tt"><?= h($x['post_title']) ?></div>

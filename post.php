@@ -11,17 +11,6 @@ session_start();
 function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 
 // Like / Unlike actions via pretty URLs (?p_id=ID&like=USER or &unlike=USER)
-$Likes = new Likes();
-if(isset($_GET['like'])){
-  $post_id = (int)($_GET['p_id'] ?? 0); $user_id = (int)$_GET['like'];
-  if($post_id && $user_id){ $Likes->setLikesPost($post_id,$user_id); }
-  header("Location: ". BASE_URL."/post/$post_id"); exit;
-}
-if(isset($_GET['unlike'])){
-  $post_id = (int)($_GET['p_id'] ?? 0); $user_id = (int)$_GET['unlike'];
-  if($post_id && $user_id){ $Likes->unlikePost($post_id,$user_id); }
-  header("Location: ". BASE_URL."/post/$post_id"); exit;
-}
 
 // --- Load post ---
 if(!isset($_GET['p_id'])){ header("Location: ". BASE_URL); exit; }
@@ -47,6 +36,8 @@ mysqli_stmt_store_result($stmt);
 if(mysqli_stmt_num_rows($stmt) != 1){ header("Location: ./errors/404.php"); exit; }
 mysqli_stmt_fetch($stmt);
 
+$post_slug = slugify($post_title);
+
 // --- Sidebar data (search, categories, popular) ---
 $cats = [];
 $cats_rs = mysqli_query($connection, "SELECT cat_id, cat_title FROM categories ORDER BY cat_title ASC");
@@ -64,7 +55,7 @@ if(isset($_POST['create_comment'])){
   $comment_content = trim($_POST['comment_content'] ?? '');
   if(!empty($comment_content)){
     $comment->setCommentsPosts($the_post_id,$comment_author_id,$comment_email,$comment_content);
-    header("Location: ". BASE_URL."/post/$the_post_id"); exit;
+    header("Location: ". BASE_URL."/".urldecode($post_slug)."-".$the_post_id); exit;
   }
 }
 
@@ -74,7 +65,7 @@ if(isset($_GET['delete_comment'])){
     $delete_comment_id = (int)$_GET['delete_comment'];
     $comment->deleteCommentsPosts($delete_comment_id);
   }
-  header("Location: ". BASE_URL."/post/$the_post_id"); exit;
+  header("Location: ". BASE_URL."/".urldecode($post_slug)."-".$the_post_id); exit;
 }
 
 // Edit (inline)
@@ -86,9 +77,24 @@ if(isset($_GET['edit'])){
     if(!empty($new_content)){
       $comment->editCommentsPosts($edit_id,$new_content);
     }
-    header("Location: ". BASE_URL."/post/$the_post_id"); exit;
+    header("Location: ". BASE_URL."/".urldecode($post_slug)."-".$the_post_id); exit;
   }
 }
+
+$Likes = new Likes();
+if(isset($_GET['like'])){
+  $post_id = (int)($_GET['p_id'] ?? 0); $user_id = (int)$_GET['like'];
+  if($post_id && $user_id){ $Likes->setLikesPost($post_id,$user_id); }
+
+
+  header("Location: ". BASE_URL."/".urldecode($post_slug)."-".$post_id); exit;
+}
+if(isset($_GET['unlike'])){
+  $post_id = (int)($_GET['p_id'] ?? 0); $user_id = (int)$_GET['unlike'];
+  if($post_id && $user_id){ $Likes->unlikePost($post_id,$user_id); }
+  header("Location: ". BASE_URL."/".urldecode($post_slug)."-".$post_id); exit;
+}
+
 
 // Fetch comments
 $getComments = new Comments();
@@ -335,7 +341,7 @@ $comments = $getComments->getCommetsPosts($the_post_id);
                     <input class="edit-inp" type="text" value="<?= h($comment_content) ?>" name="comment_content">
                     <div style="margin-top:8px; display:flex; gap:8px">
                       <button class="ghost" type="submit" name="edit_comment">Save</button>
-                      <a class="ghost" style="padding:10px 14px; border-radius:12px" href="./post/<?= $the_post_id ?>">Cancel</a>
+                      <a class="ghost" style="padding:10px 14px; border-radius:12px" href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $the_post_id ?>">Cancel</a>
                     </div>
                   </form>
                 <?php else: ?>
@@ -371,7 +377,7 @@ $comments = $getComments->getCommetsPosts($the_post_id);
         <h4>Popular</h4>
         <div class="popular">
           <?php foreach ($popular as $pp): ?>
-            <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$pp['post_id'] ?>">
+            <a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $the_post_id ?>">
               <img src="<?= (defined('BASE_URL') ? BASE_URL : '') ?>/images/<?= $pp['post_image'] ? h($pp['post_image']) : 'y9DpT.jpg' ?>" alt="thumb">
               <div>
                 <div style="font-weight:700; line-height:1.25; margin-bottom:4px; color:var(--fg)"><?= h($pp['post_title']) ?></div>

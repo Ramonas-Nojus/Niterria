@@ -238,7 +238,10 @@ echo "<td><img width='100' src='../images/$post_image' alt='image'></td>";
 
 
         echo "<td>$post_date </td>";
-        echo "<td><a class='btn btn-primary' href='/post/{$post_id}'>View Post</a></td>";
+
+        $post_slug = slugify($row['post_title']);
+
+        echo "<td><a class='btn btn-primary' href='/{$post_slug}-{$post_id}'>View Post</a></td>";
         echo "<td><a class='btn btn-info' href='/admin/edit_post/{$post_id}'>Edit</a></td>";
 
 

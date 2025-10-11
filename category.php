@@ -251,19 +251,23 @@ footer{border-top:1px solid var(--stroke);background:color-mix(in oklab,var(--s)
         <div class="card" style="padding:24px;text-align:center">No posts found in this category.</div>
       <?php else: ?>
         <?php foreach ($posts as $row): 
+          $post_slug = slugify($row['post_title']);
+          $post_id = $row["post_id"];
+
+
           $img = $row['post_image'] && file_exists("images/".$row['post_image']) ? h($row['post_image']) : "y9DpT.jpg";
         ?>
           <article class="card post">
-            <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$row['post_id'] ?>">
+            <a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>">
               <div class="img-wrap">
                 <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $img ?>" alt="">
               </div>
             </a>
             <div class="b">
               <div class="meta"><?= h(date('M j, Y', strtotime($row['post_date']))) ?></div>
-              <h2><a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$row['post_id'] ?>"><?= h($row['post_title']) ?></a></h2>
+              <h2><a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>"><?= h($row['post_title']) ?></a></h2>
               <p><?= strip_tags($row['post_subtitle']) ?></p>
-              <div style="margin-top:10px"><a class="ghost" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$row['post_id'] ?>">Read More →</a></div>
+              <div style="margin-top:10px"><a class="ghost" href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>">Read More →</a></div>
             </div>
           </article>
         <?php endforeach; ?>
@@ -313,9 +317,12 @@ footer{border-top:1px solid var(--stroke);background:color-mix(in oklab,var(--s)
       <h4>Popular</h4>
       <div class="popular">
         <?php foreach ($popular as $pp): 
+          $post_slug = slugify($pp['post_title']);
+          $post_id = $pp["post_id"];
+
           $pimg = $pp['post_image'] && file_exists("images/".$pp['post_image']) ? h($pp['post_image']) : "y9DpT.jpg";
         ?>
-          <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$pp['post_id'] ?>">
+          <a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>">
             <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $pimg ?>" alt="">
             <div>
               <div style="font-weight:700;line-height:1.25;margin-bottom:4px"><?= h($pp['post_title']) ?></div>

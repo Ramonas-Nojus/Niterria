@@ -18,7 +18,11 @@
       $addPost = $setPost->setPost($post_title,$post_category_id,$post_image,$post_image_temp,$post_tags,$post_content,$post_subtitle);
 
       $the_post_id = mysqli_insert_id($connection);
-      echo "<p class='bg-success'>Post Created. <a href='../post/{$the_post_id}'>View Post </a>"; if(is_admin()){ " or <a href='posts.php'>Edit More Posts</a></p>"; };
+
+      $post_slug = slugify($post_title);
+
+
+      echo "<p class='bg-success'>Post Created. <a href='../{$post_slug}-{$the_post_id}'>View Post </a>"; if(is_admin()){ " or <a href='posts.php'>Edit More Posts</a></p>"; };
    }  
 ?>
 

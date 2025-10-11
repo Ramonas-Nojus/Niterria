@@ -35,6 +35,8 @@
         $post_content        =  $_POST['post_content'];
         $post_tags           =  $_POST['post_tags'];
         $post_subtitle       =  $_POST['post_subtitle'];
+
+        $post_slug = slugify($post_title);
         
         if(empty($post_image)) {
             $query = "SELECT post_image FROM posts WHERE post_id = $the_post_id ";
@@ -45,7 +47,7 @@
 
         $post = new Posts();
         $updatePost = $post->updatePost($post_title,$post_category_id,$post_image,$post_image_temp,$post_tags,$post_content,$post_date,$post_subtitle, $the_post_id, $post_status);
-        echo "<p class='bg-success'>Post Updated. <a href='/post/{$the_post_id}'>View Post </a>"; if(is_admin()){ " or <a href='posts.php'>Edit More Posts</a></p>"; };
+        echo "<p class='bg-success'>Post Updated. <a href='../{$post_slug}-{$the_post_id}'>View Post </a>"; if(is_admin()){ " or <a href='posts.php'>Edit More Posts</a></p>"; };
     }
 ?>
 

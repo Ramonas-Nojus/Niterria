@@ -56,8 +56,8 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Niterria — Tech/Luxury Journal</title>
-  <meta name="description" content="Niterria — premium tech/luxury journal. Modern dark UI, glass cards, smooth glow/zoom effects." />
+  <title>Niterria — Tech Journal</title>
+  <meta name="description" content="Niterria — premium tech journal. Modern dark UI, glass cards, smooth glow/zoom effects." />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -206,8 +206,13 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
         <?php if ($picks_count === 0): ?>
           <div class="tile" style="grid-column:span 12; padding:16px">No featured posts yet.</div>
         <?php else: ?>
-          <?php foreach ($picks as $p): ?>
-            <a class="tile" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$p['post_id'] ?>">
+          <?php foreach ($picks as $p): 
+            $post_slug = slugify($p['post_title']);
+            $post_id = $p["post_id"];
+
+
+            ?>
+            <a class="tile" href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>">
               <div class="img-wrap">
                 <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $p['post_image'] ? h($p['post_image']) : 'y9DpT.jpg' ?>" alt="">
               </div>
@@ -230,18 +235,23 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
         <?php if ($total_list < 1): ?>
           <div class="card" style="padding:24px; text-align:center">No posts available</div>
         <?php else: ?>
-          <?php foreach ($posts as $row): ?>
+          <?php foreach ($posts as $row): 
+            
+            $post_slug = slugify($row['post_title']);
+            $post_id = $row["post_id"];
+            
+            ?>
             <article class="card post">
-              <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$row['post_id'] ?>">
+              <a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>">
                 <div class="img-wrap">
                   <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $row['post_image'] ? h($row['post_image']) : 'y9DpT.jpg' ?>" alt="">
                 </div>
               </a>
               <div class="b">
                 <div class="meta"><?= h(date('M j, Y', strtotime($row['post_date']))) ?></div>
-                <h2><a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$row['post_id'] ?>"><?= h($row['post_title']) ?></a></h2>
+                <h2><a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>"><?= h($row['post_title']) ?></a></h2>
                 <p><?= h($row['post_subtitle']) ?></p>
-                <div style="margin-top:10px"><a class="ghost" href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$row['post_id'] ?>">Read More →</a></div>
+                <div style="margin-top:10px"><a class="ghost" href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>"  >Read More →</a></div>
               </div>
             </article>
           <?php endforeach; ?>
@@ -290,8 +300,11 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
       <div class="box">
         <h4>Popular</h4>
         <div class="popular">
-          <?php foreach ($popular as $pp): ?>
-            <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$pp['post_id'] ?>">
+          <?php foreach ($popular as $pp):
+            $post_slug = slugify($pp['post_title']);
+            $post_id = $pp["post_id"];
+            ?>
+            <a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>">
               <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $pp['post_image'] ? h($pp['post_image']) : 'y9DpT.jpg' ?>" alt="thumb">
               <div>
                 <div style="font-weight:700; line-height:1.25; margin-bottom:4px; color:var(--fg)"><?= h($pp['post_title']) ?></div>

@@ -194,16 +194,19 @@ if ($search !== '') {
           $date  = h($row['post_date'] ?? '');
           $sub   = h($row['post_subtitle'] ?? '');
           $img   = h(($row['post_image'] ?? '') ?: 'y9DpT.jpg');
+          $post_slug = slugify($title);
+
         ?>
           <article class="card">
-            <a href="post/<?= $pid ?>">
+            
+            <a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $pid ?>">
               <div class="img-wrap">
                 <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $img ?>" alt="">
               </div>
             </a>
             <div class="b">
               <div class="meta"><?= $date ?></div>
-              <h2><a href="post/<?= $pid ?>"><?= $title ?></a></h2>
+              <h2><a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $pid ?>"><?= $title ?></a></h2>
               <p><?= $sub ?></p>
               <div style="margin-top:10px"><a class="ghost" href="post.php?p_id=<?= $pid ?>">Read More →</a></div>
             </div>
@@ -243,8 +246,11 @@ if ($search !== '') {
       <div class="box">
         <h4>Popular</h4>
         <div class="popular">
-          <?php foreach ($popular as $pp): ?>
-            <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/post/<?= (int)$pp['post_id'] ?>">
+          <?php foreach ($popular as $pp): 
+              $post_slug = slugify($pp['post_title']);
+
+            ?>
+            <a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $pp['post_id'] ?>">
               <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $pp['post_image'] ? h($pp['post_image']) : 'y9DpT.jpg' ?>" alt="thumb">
               <div>
                 <div style="font-weight:700; line-height:1.25; margin-bottom:4px; color:var(--fg)"><?= h($pp['post_title']) ?></div>

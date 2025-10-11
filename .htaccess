@@ -2,16 +2,21 @@ RewriteEngine on
 
 RewriteRule ^(index|contact|registration|login|search|logout|profile|users_search|about)$ $1.php [NC,L]
 
-RewriteRule ^post/(\d+)$ post.php?p_id=$1 [NC,L]
+# Only rewrite if not a real file or directory
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 
-RewriteRule ^post/(\d+)/edit/(\d+)$ post.php?p_id=$1&edit=$2 [NC,L]
+# --- ROOT-LEVEL POST SLUGS ---
+# Example: /asus-rog-zephyrus-g14-review-a-powerful-and-portable-gaming-laptop-for-gamers-on-the-go-481
+RewriteRule ^([A-Za-z0-9-]+)-([0-9]+)/?$ post.php?p_id=$2 [NC,L,QSA]
 
-RewriteRule ^post/(\d+)/delete/(\d+)$ post.php?p_id=$1&delete_comment=$2 [NC,L]
+# Post actions (still need ID)
+RewriteRule ^([0-9]+)/edit/([0-9]+)/?$ post.php?p_id=$1&edit=$2 [NC,L,QSA]
+RewriteRule ^([0-9]+)/delete/([0-9]+)/?$ post.php?p_id=$1&delete_comment=$2 [NC,L,QSA]
+RewriteRule ^([0-9]+)/like/([0-9]+)/?$ post.php?p_id=$1&like=$2 [NC,L,QSA]
+RewriteRule ^([0-9]+)/unlike/([0-9]+)/?$ post.php?p_id=$1&unlike=$2 [NC,L,QSA]
 
-RewriteRule ^post/(\d+)/like/(\d+)$ post.php?p_id=$1&like=$2 [NC,L]
-
-RewriteRule ^post/(\d+)/unlike/(\d+)$ post.php?p_id=$1&unlike=$2 [NC,L]
-
-RewriteRule ^category/([^/]*)/(\d+)/?$ category.php?category=$1&cat_id=$2 
+# --- CATEGORY ROUTE ---
+RewriteRule ^category/([^/]+)/([0-9]+)/?$ category.php?category=$1&cat_id=$2 [NC,L,QSA]
 
 

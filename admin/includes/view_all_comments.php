@@ -115,7 +115,10 @@ if(isset($_POST['checkBoxArray'])) {
             while($row = mysqli_fetch_assoc($select_post_id_query)){
             $post_id = $row['post_id'];
             $post_title = $row['post_title'];
-            echo "<td><a href='/post/$post_id'>$post_title</a></td>";
+
+            $post_slug = slugify($post_title);
+
+            echo "<td><a href='/$post_slug-$post_id'>$post_title</a></td>";
         }
         echo "<td>$comment_date</td>";
         echo "<td><a href='comments.php?approve=$comment_id'>Approve</a></td>";
