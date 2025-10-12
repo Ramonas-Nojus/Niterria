@@ -218,7 +218,9 @@ $comments = $getComments->getCommetsPosts($the_post_id);
   box-shadow:0 10px 30px -10px rgba(83,41,237,.6);
   transform:translateY(-2px) scale(1.02);
 }
-
+    .search{display:flex;gap:8px}
+    .search input{flex:1;border-radius:14px;padding:12px 14px;background:var(--glass2);border:1px solid var(--stroke);color:var(--fg)}
+    .search button{border:1px solid var(--stroke);background:linear-gradient(135deg,var(--p),var(--s));color:white;border-radius:14px;padding:12px 14px;cursor:pointer}
   </style>
 </head>
 <body>
@@ -357,14 +359,14 @@ $comments = $getComments->getCommetsPosts($the_post_id);
     <!-- SIDEBAR RIGHT -->
     <aside>
       <div class="box">
-        <h4>Search</h4>
-        <form method="get" action="<?= defined('BASE_URL') ? BASE_URL : '' ?>/search">
-          <div class="search">
-            <input name="search" placeholder="Find something good…" />
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/></svg>
-          </div>
-        </form>
-      </div>
+    <h4>Search</h4>
+    <form method="get" action="/search.php">
+        <div class="search">
+        <input name="search" placeholder="Find something good…" />
+        <button name="submit" type="submit">Search</button>
+        </div>
+    </form>
+    </div>
       <div class="box">
         <h4>Categories</h4>
         <div class="chips">
