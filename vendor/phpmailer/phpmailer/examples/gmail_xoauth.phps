@@ -1,7 +1,10 @@
 <?php
 
 /**
- * This example shows how to send via Google's Gmail servers using XOAUTH2 authentication.
+ * This example shows how to send via Google's Gmail servers using XOAUTH2 authentication
+ * using the league/oauth2-client to provide the OAuth2 token.
+ * To use a different OAuth2 library create a wrapper class that implements OAuthTokenProvider and
+ * pass that wrapper class to PHPMailer::setOAuth().
  */
 
 //Import PHPMailer classes into the global namespace
@@ -34,11 +37,15 @@ $mail->SMTPDebug = SMTP::DEBUG_SERVER;
 //Set the hostname of the mail server
 $mail->Host = 'smtp.gmail.com';
 
-//Set the SMTP port number - 587 for authenticated TLS, a.k.a. RFC4409 SMTP submission
-$mail->Port = 587;
+//Set the SMTP port number:
+// - 465 for SMTP with implicit TLS, a.k.a. RFC8314 SMTPS or
+// - 587 for SMTP+STARTTLS
+$mail->Port = 465;
 
-//Set the encryption mechanism to use - STARTTLS or SMTPS
-$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+//Set the encryption mechanism to use:
+// - SMTPS (implicit TLS on port 465) or
+// - STARTTLS (explicit TLS on port 587)
+$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
 
 //Whether to use SMTP authentication
 $mail->SMTPAuth = true;
@@ -46,6 +53,7 @@ $mail->SMTPAuth = true;
 //Set AuthType to use XOAUTH2
 $mail->AuthType = 'XOAUTH2';
 
+//Start Option 1: Use league/oauth2-client as OAuth2 token provider
 //Fill in authentication details here
 //Either the gmail account owner, or the user that gave consent
 $email = 'someone@gmail.com';
@@ -76,6 +84,16 @@ $mail->setOAuth(
         ]
     )
 );
+//End Option 1
+
+//Option 2: Another OAuth library as OAuth2 token provider
+//Set up the other oauth library as per its documentation
+//Then create the wrapper class that implements OAuthTokenProvider
+$oauthTokenProvider = new MyOAuthTokenProvider(/* Email, ClientId, ClientSecret, etc. */);
+
+//Pass the implementation of OAuthTokenProvider to PHPMailer
+$mail->setOAuth($oauthTokenProvider);
+//End Option 2
 
 //Set who the message is to be sent from
 //For gmail, this generally needs to be the same as the user you logged in as
@@ -94,9 +112,6 @@ $mail->msgHTML(file_get_contents('contentsutf8.html'), __DIR__);
 
 //Replace the plain text body with one created manually
 $mail->AltBody = 'This is a plain-text message body';
-
-//Attach an image file
-$mail->addAttachment('images/phpmailer_mini.png');
 
 //send the message, check for errors
 if (!$mail->send()) {

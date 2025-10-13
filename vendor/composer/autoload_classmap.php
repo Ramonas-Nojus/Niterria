@@ -11,7 +11,8 @@ return array(
     'Config' => $baseDir . '/classes/Config.php',
     'Db' => $baseDir . '/classes/db.class.php',
     'Likes' => $baseDir . '/classes/Likes.class.php',
+    'PasswordReset' => $baseDir . '/classes/PasswordReset.php',
     'Posts' => $baseDir . '/classes/Posts.class.php',
     'Users' => $baseDir . '/classes/Users.class.php',
-    'search\\Search' => $baseDir . '/classes/search/search.class.php',
+    'search\\Search' => $baseDir . '/classes/search/Search.class.php',
 );

@@ -1,6 +1,19 @@
-RewriteEngine on
+Options -MultiViews
 
-RewriteRule ^(index|contact|registration|login|search|logout|profile|users_search|about)$ $1.php [NC,L]
+# Custom error docs (paths from docroot)
+ErrorDocument 404 /errors/404.php
+ErrorDocument 500 /errors/500.php
+
+RewriteEngine On
+
+# Serve real files/dirs
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Never rewrite the errors folder
+RewriteRule ^errors/ - [L]
+RewriteRule ^(index|contact|registration|login|search|logout|profile|users_search|about|privacy|forgot)$ $1.php [NC,L]
 
 # Only rewrite if not a real file or directory
 RewriteCond %{REQUEST_FILENAME} !-f

@@ -4,9 +4,6 @@ include "settings-core-7189.php";
 include "includes/db.php";
 include "admin/functions.php";
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 session_start();
 
 // --- Config ---
@@ -46,7 +43,7 @@ if ($cats_rs) { $cats = mysqli_fetch_all($cats_rs, MYSQLI_ASSOC); }
 
 // --- Popular (fallback to latest) ---
 $popular = [];
-$pop_rs = mysqli_query($connection, "SELECT post_id, post_title, post_date, post_image FROM posts $where ORDER BY post_id DESC LIMIT 5");
+$pop_rs = mysqli_query($connection, "SELECT post_id, post_title, post_date, post_image FROM posts $where ORDER BY post_views_count DESC LIMIT 5");
 if ($pop_rs) { $popular = mysqli_fetch_all($pop_rs, MYSQLI_ASSOC); }
 
 function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
@@ -57,7 +54,10 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Niterria — Tech Journal</title>
+  <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>/images/favicon.png">
   <meta name="description" content="Niterria — premium tech journal. Modern dark UI, glass cards, smooth glow/zoom effects." />
+  <link rel="canonical" href="<?= BASE_URL ?>" />
+
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -80,14 +80,67 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
     .wrap{max-width:1260px; margin:0 auto; padding:0 22px}
 
     /* NAV */
-    .nav{position:sticky; top:0; z-index:30; backdrop-filter:saturate(180%) blur(12px); background:color-mix(in oklab, var(--p) 12%, transparent); border-bottom:1px solid var(--stroke)}
-    .nav-in{display:flex; align-items:center; justify-content:space-between; padding:14px 0}
-    .brand{display:flex; align-items:center; gap:12px; color:var(--fg)}
-    .badge{width:42px; height:42px; border-radius:14px; display:grid; place-items:center; border:1px solid var(--stroke); background:linear-gradient(135deg,var(--p),var(--s)); box-shadow:var(--shadow)}
-    .bt small{display:block; letter-spacing:.18em; color:#C9D2E1; opacity:.85; text-transform:uppercase; font-size:11px; line-height:1}
-    .bt b{display:block; font-weight:800; line-height:1.1; color:var(--fg)}
-    .nav-links{display:flex; gap:18px; align-items:center}
-    .ghost{border:1px solid var(--stroke); background:var(--glass); padding:10px 14px; border-radius:14px}
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: saturate(180%) blur(12px);
+      background: color-mix(in oklab, var(--p) 12%, transparent);
+      border-bottom: 1px solid var(--stroke);
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    .wrap {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 0 22px;
+    }
+    .nav-in {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--fg);
+      text-decoration: none;
+    }
+    .bt small {
+      display: block;
+      letter-spacing: .18em;
+      color: #C9D2E1;
+      opacity: .85;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    .bt b {
+      display: block;
+      font-weight: 800;
+      color: var(--fg);
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .nav-links a {
+      color: var(--fg);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 15px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      transition: .25s;
+    }
+    .nav-links a:hover {
+      background: var(--glass2);
+    }
+    .nav-links .ghost {
+      border: 1px solid var(--stroke);
+      background: var(--glass);
+    }
 
     /* HERO */
     .hero{padding:70px 0 30px}
@@ -115,15 +168,89 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
     @media(max-width: 980px){ .grid{ grid-template-columns:1fr; } }
 
     /* POSTS */
-    .list{display:grid; grid-template-columns:1fr; gap:16px}
-    .card{border:1px solid var(--stroke); background:var(--glass); border-radius:22px; overflow:hidden}
-    .post{display:grid; grid-template-columns:.95fr 1.05fr}
-    .post .img-wrap img{aspect-ratio:4/3}
-    .post .b{padding:16px}
-    .post .meta{color:#B6C0CF; font-size:12px}
-    .post h2{margin:8px 0 8px; font-size:22px}
-    .post p{color:var(--muted)}
-    @media(max-width:900px){ .post{grid-template-columns:1fr} }
+   /* POSTS — FIXED */
+.list {
+  display: grid;
+  gap: 22px;
+}
+.card {
+  border: 1px solid var(--stroke);
+  background: var(--glass);
+  border-radius: 22px;
+  overflow: hidden;
+  transition: .25s box-shadow, .25s transform;
+  display: flex;
+  flex-direction: column;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 60px -20px rgba(83,41,237,.55);
+}
+
+/* unified two-column layout */
+.post {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  align-items: stretch;
+  width: 100%;
+}
+.post .img-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--glass2);
+}
+.post .img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 16/10;
+  display: block;
+  transition: transform .4s ease;
+}
+.post:hover .img-wrap img {
+  transform: scale(1.05);
+}
+
+.post .b {
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+}
+
+.meta {
+  color: #B6C0CF;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.post h2 {
+  margin: 6px 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.post p {
+  color: var(--muted);
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+@media(max-width: 900px) {
+  .post {
+    grid-template-columns: 1fr;
+  }
+  .post .img-wrap {
+    height: 230px;
+  }
+}
 
     .pager{display:flex; justify-content:space-between; align-items:center; border:1px solid var(--stroke); background:var(--glass); border-radius:16px; padding:8px; margin-top:10px}
     .pages{display:flex; gap:8px}
@@ -144,7 +271,7 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
     .popular img{width:110px; height:78px; object-fit:cover; border-radius:10px; border:1px solid var(--stroke)}
 
     /* FOOTER */
-    footer{border-top:1px solid var(--stroke); background:color-mix(in oklab, var(--s) 10%, transparent)}
+    footer{border-top:1px solid var(--stroke); background:color-mix(in oklab, var(--s) 10%, transparent); margin-top: 15px;}
     .foot{display:grid; grid-template-columns:1fr auto; gap:12px; padding:22px 0}
     @media(max-width:800px){.foot{grid-template-columns:1fr}}
     .icons{display:flex; gap:12px}
@@ -153,45 +280,76 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
     /* BACK TO TOP */
     .to-top{position:fixed; right:18px; bottom:18px; width:48px; height:48px; display:grid; place-items:center; border-radius:50%; border:1px solid var(--stroke); background:linear-gradient(135deg,var(--p),var(--s)); color:white; box-shadow:var(--shadow); opacity:0; pointer-events:none; transform:translateY(10px); transition:.25s}
     .to-top.show{opacity:1; pointer-events:auto; transform:translateY(0)}
+
+/* ensure proper positioning context */
+.nav-in{ position: relative; }
+
+/* burger hidden on desktop */
+.menu-toggle{
+  display:none;border:1px solid var(--stroke);background:var(--glass);
+  padding:10px 12px;border-radius:12px;color:var(--fg);cursor:pointer
+}
+
+/* keep desktop layout intact */
+.nav-links{ display:flex; gap:18px; align-items:center; }
+
+/* mobile dropdown */
+@media(max-width:900px){
+  .menu-toggle{ display:inline-flex; align-items:center; justify-content:center; }
+  /* hide by default on mobile; override anything earlier */
+  .nav-links{ 
+    display:none !important; 
+    position:absolute; left:0; right:0; top:100%;
+    flex-direction:column; gap:10px; padding:14px 18px 18px;
+    border-top:1px solid var(--stroke);
+    background:rgba(10,13,20);
+    z-index: 50;
+  }
+  .nav-links.open{ display:flex !important; }
+  .nav-links a{
+    display:block; width:100%; padding:12px 10px;
+    border:1px solid var(--stroke); border-radius:12px; background:var(--glass);
+  }
+  body.menu-open{ overflow:hidden; }
+}
+
   </style>
 </head>
 <body>
   <!-- NAV -->
 <div class="nav">
-    <div class="wrap nav-in">
-        <!-- Brand -->
-        <a class="brand" href="<?= defined('BASE_URL') ? BASE_URL : '/' ?>">
-        <div class="badge" aria-hidden="true" style="background:none; border:none; box-shadow:none; padding:0;">
-            <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/WhiteLogo.png"
-                alt="Niterria logo"
-                style="height:42px; width:auto; display:block;">
-        </div>
-        <div class="bt">
-            <small>Niterria</small><b>Tech Journal</b>
-        </div>
-        </a>
+  <div class="wrap nav-in">
+    <a class="brand" href="<?= defined('BASE_URL') ? BASE_URL : '/' ?>">
+      <div class="badge" aria-hidden="true" style="background:none;border:none;box-shadow:none;padding:0;">
+        <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/WhiteLogo.png" alt="Niterria logo" style="height:42px;width:auto;display:block;">
+      </div>
+      <div class="bt"><small>Niterria</small><b>Tech Journal</b></div>
+    </a>
 
-        <!-- Navigation Links -->
-        <div class="nav-links">
-        <a href="<?= defined('BASE_URL') ? BASE_URL : '/' ?>">Home</a>
-        <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/about">About</a>
+    <!-- Burger -->
+    <button class="menu-toggle" aria-label="Menu" aria-expanded="false" aria-controls="primary-nav">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"/>
+      </svg>
+    </button>
 
-        <?php if(isLoggedIn()): ?>
-            <a href="<?= BASE_URL ?>/includes/logout.php">Logout</a>
-            <a href="<?= BASE_URL ?>/profile">Profile</a>
+    <!-- Links -->
+    <div id="primary-nav" class="nav-links" role="navigation">
+      <a href="<?= defined('BASE_URL') ? BASE_URL : '/' ?>">Home</a>
+      <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/about">About</a>
 
-            <?php if(is_admin()): ?>
-                <a href="<?= BASE_URL ?>/admin">Admin</a>
-            <?php endif; ?>
-
-        <?php else: ?>
-            <a href="<?= BASE_URL ?>/registration">Register</a>
-            <a href="<?= BASE_URL ?>/login" class="ghost">Login</a>
-        <?php endif; ?>
-
-        </div>
+      <?php if(isLoggedIn()): ?>
+        <a href="<?= BASE_URL ?>/includes/logout.php">Logout</a>
+        <a href="<?= BASE_URL ?>/profile">Profile</a>
+        <?php if(is_admin()): ?><a href="<?= BASE_URL ?>/admin">Admin</a><?php endif; ?>
+      <?php else: ?>
+        <a href="<?= BASE_URL ?>/registration">Register</a>
+        <a href="<?= BASE_URL ?>/login" class="ghost">Login</a>
+      <?php endif; ?>
     </div>
-    </div>
+  </div>
+</div>
+
 
   <!-- HERO: Editor's Picks (3 newest) -->
   <section class="hero">
@@ -200,6 +358,8 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
         <div>
           <span class="eyebrow"><span class="dot"></span> Editor’s Picks</span>
           <div class="hero-title">Modern systems, <span class="fade">timeless design</span>.</div>
+          <p class="intro-snippet">Discover reviews, trends, and analysis on modern tech, software tools, and digital systems — curated by humans, not AI bots.</p>
+
         </div>
       </div>
       <div class="feat-row">
@@ -214,7 +374,7 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
             ?>
             <a class="tile" href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>">
               <div class="img-wrap">
-                <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $p['post_image'] ? h($p['post_image']) : 'y9DpT.jpg' ?>" alt="">
+                <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $p['post_image'] ? h($p['post_image']) : 'y9DpT.jpg' ?>" alt="<?= h($p['post_title']) ?>">
               </div>
               <div class="tile-in">
                 <div class="kicker"><?= h(date('M j, Y', strtotime($p['post_date']))) ?></div>
@@ -228,35 +388,35 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
   </section>
 
   <!-- MAIN GRID: Posts + Sticky Sidebar -->
-  <section id="journal" class="wrap grid" style="padding: 10px 0 60px">
-    <!-- POSTS -->
-    <div>
-      <div class="list">
-        <?php if ($total_list < 1): ?>
-          <div class="card" style="padding:24px; text-align:center">No posts available</div>
-        <?php else: ?>
-          <?php foreach ($posts as $row): 
-            
-            $post_slug = slugify($row['post_title']);
-            $post_id = $row["post_id"];
-            
-            ?>
-            <article class="card post">
-              <a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>">
-                <div class="img-wrap">
-                  <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $row['post_image'] ? h($row['post_image']) : 'y9DpT.jpg' ?>" alt="">
-                </div>
-              </a>
-              <div class="b">
-                <div class="meta"><?= h(date('M j, Y', strtotime($row['post_date']))) ?></div>
-                <h2><a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>"><?= h($row['post_title']) ?></a></h2>
-                <p><?= h($row['post_subtitle']) ?></p>
-                <div style="margin-top:10px"><a class="ghost" href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>"  >Read More →</a></div>
+<section id="journal" class="wrap grid">
+  <div>
+    <div class="list">
+      <?php if ($total_list < 1): ?>
+        <div class="card" style="padding:24px;text-align:center">No posts found in this category.</div>
+      <?php else: ?>
+        <?php foreach ($posts as $row): 
+          $post_slug = slugify($row['post_title']);
+          $post_id = $row["post_id"];
+
+
+          $img = $row['post_image'] && file_exists("images/".$row['post_image']) ? h($row['post_image']) : "y9DpT.jpg";
+        ?>
+          <article class="card post">
+            <a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>">
+              <div class="img-wrap">
+                <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $img ?>" alt="<?= h($p['post_title']) ?>">
               </div>
-            </article>
-          <?php endforeach; ?>
-        <?php endif; ?>
-      </div>
+            </a>
+            <div class="b">
+              <div class="meta"><?= h(date('M j, Y', strtotime($row['post_date']))) ?></div>
+              <h2><a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>"><?= h($row['post_title']) ?></a></h2>
+              <p><?= strip_tags($row['post_subtitle']) ?></p>
+              <div style="margin-top:10px"><a class="ghost" href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $post_id ?>">Read More →</a></div>
+            </div>
+          </article>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    </div>
 
       <!-- Pagination -->
       <?php if ($total_pages > 1): ?>
@@ -347,5 +507,102 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
     });
     toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   </script>
+
+<script>
+  const btn = document.querySelector('.menu-toggle');
+  const nav = document.getElementById('primary-nav');
+
+  function closeMenu(){
+    nav.classList.remove('open');
+    document.body.classList.remove('menu-open');
+    btn?.setAttribute('aria-expanded','false');
+  }
+  function toggleMenu(e){
+    e?.stopPropagation();
+    const open = nav.classList.toggle('open');
+    document.body.classList.toggle('menu-open', open);
+    btn?.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  btn?.addEventListener('click', toggleMenu);
+
+  // close on outside click / ESC / desktop resize
+  document.addEventListener('click', (e)=>{
+    if(!nav.classList.contains('open')) return;
+    if(e.target.closest('#primary-nav') || e.target.closest('.menu-toggle')) return;
+    closeMenu();
+  });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
+  window.addEventListener('resize', ()=>{ if(innerWidth>900) closeMenu(); });
+</script>
+
+<!-- Cookie Consent -->
+<div id="cookie-banner" style="
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  background:rgba(255,255,255,.08); backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.15); color:#E9EEF6;
+  border-radius:18px; padding:18px 24px; max-width:480px;
+  font-size:14px; line-height:1.5; box-shadow:0 20px 60px rgba(0,0,0,.4);
+  display:none; z-index:2000; text-align:center;">
+  <p style="margin:0 0 12px;">We use cookies for analytics and to improve your experience.
+    By clicking <strong>Accept</strong>, you consent to Google and Ahrefs tracking cookies.</p>
+  <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+    <button id="acceptCookies" style="
+      border:none; background:linear-gradient(135deg,#260ED0,#5329ED);
+      color:white; font-weight:600; border-radius:12px;
+      padding:10px 20px; cursor:pointer;">Accept</button>
+    <a href='/privacy' style="color:#A8B1C0;text-decoration:underline;font-size:13px;">Learn more</a>
+  </div>
+</div>
+
+<script>
+(function(){
+  const banner = document.getElementById('cookie-banner');
+  const btn = document.getElementById('acceptCookies');
+  if(!localStorage.getItem('cookiesAccepted')){
+    banner.style.display = 'block';
+    banner.style.opacity = '0';
+    setTimeout(()=>banner.style.transition='opacity .5s ease',50);
+    setTimeout(()=>banner.style.opacity='1',100);
+  }
+
+  btn?.addEventListener('click', ()=>{
+    localStorage.setItem('cookiesAccepted','true');
+    banner.style.opacity='0';
+    setTimeout(()=>banner.remove(),400);
+    loadAnalytics();
+  });
+
+  if(localStorage.getItem('cookiesAccepted')) loadAnalytics();
+
+  function loadAnalytics(){
+    // Google Analytics
+    const ga1=document.createElement('script');
+    ga1.async=true;
+    ga1.src='https://www.googletagmanager.com/gtag/js?id=G-RYJMZ5MVRY';
+    document.head.appendChild(ga1);
+    window.dataLayer=window.dataLayer||[];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js',new Date());
+    gtag('config','G-RYJMZ5MVRY');
+
+    // Ahrefs
+    const ahrefs=document.createElement('script');
+    ahrefs.async=true;
+    ahrefs.src='https://analytics.ahrefs.com/analytics.js';
+    ahrefs.setAttribute('data-key','zweMA87LDqQO2bvh5HVlIw');
+    document.head.appendChild(ahrefs);
+
+    // Google Ads / AdSense
+    const ads=document.createElement('script');
+    ads.async=true;
+    ads.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7440179235836916';
+    ads.crossOrigin='anonymous';
+    document.head.appendChild(ads);
+  }
+})();
+</script>
+
+
 </body>
 </html>

@@ -43,7 +43,7 @@ $cats = [];
 $cats_rs = mysqli_query($connection, "SELECT cat_id, cat_title FROM categories ORDER BY cat_title ASC");
 if($cats_rs){ $cats = mysqli_fetch_all($cats_rs, MYSQLI_ASSOC); }
 $popular = [];
-$pop_rs = mysqli_query($connection, "SELECT post_id, post_title, post_date, post_image FROM posts WHERE post_status='published' ORDER BY post_id DESC LIMIT 5");
+$pop_rs = mysqli_query($connection, "SELECT post_id, post_title, post_date, post_image FROM posts WHERE post_status='published' ORDER BY post_views_count DESC LIMIT 5");
 if($pop_rs){ $popular = mysqli_fetch_all($pop_rs, MYSQLI_ASSOC); }
 
 // --- Comments handlers ---
@@ -106,6 +106,8 @@ $comments = $getComments->getCommetsPosts($the_post_id);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><?= h($post_title) ?> — Niterria</title>
+  <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>/images/favicon.png">
+  <link rel="canonical" href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $the_post_id ?>" />
   <meta name="description" content="<?= h($post_subtitle) ?>" />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
@@ -116,14 +118,67 @@ $comments = $getComments->getCommetsPosts($the_post_id);
     .wrap{max-width:1260px; margin:0 auto; padding:0 22px}
 
     /* NAV */
-    .nav{position:sticky; top:0; z-index:30; backdrop-filter:saturate(180%) blur(12px); background:color-mix(in oklab, var(--p) 12%, transparent); border-bottom:1px solid var(--stroke)}
-    .nav-in{display:flex; align-items:center; justify-content:space-between; padding:14px 0}
-    .brand{display:flex; align-items:center; gap:12px; color:var(--fg)}
-    .badge{width:42px; height:42px; border-radius:14px; display:grid; place-items:center; border:1px solid var(--stroke); background:linear-gradient(135deg,var(--p),var(--s)); box-shadow:var(--shadow)}
-    .bt small{display:block; letter-spacing:.18em; color:#C9D2E1; opacity:.85; text-transform:uppercase; font-size:11px; line-height:1}
-    .bt b{display:block; font-weight:800; line-height:1.1; color:var(--fg)}
-    .nav-links{display:flex; gap:18px; align-items:center}
-    .ghost{border:1px solid var(--stroke); background:var(--glass); padding:10px 14px; border-radius:14px}
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: saturate(180%) blur(12px);
+      background: color-mix(in oklab, var(--p) 12%, transparent);
+      border-bottom: 1px solid var(--stroke);
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    .wrap {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 0 22px;
+    }
+    .nav-in {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--fg);
+      text-decoration: none;
+    }
+    .bt small {
+      display: block;
+      letter-spacing: .18em;
+      color: #C9D2E1;
+      opacity: .85;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    .bt b {
+      display: block;
+      font-weight: 800;
+      color: var(--fg);
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .nav-links a {
+      color: var(--fg);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 15px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      transition: .25s;
+    }
+    .nav-links a:hover {
+      background: var(--glass2);
+    }
+    .nav-links .ghost {
+      border: 1px solid var(--stroke);
+      background: var(--glass);
+    }
 
     /* HERO POST */
     .hero{padding:44px 0 18px}
@@ -133,7 +188,7 @@ $comments = $getComments->getCommetsPosts($the_post_id);
     .meta{color:#B6C0CF; font-size:13px}
     .hero-img{border:1px solid var(--stroke); background:var(--glass); border-radius:22px; overflow:hidden}
     .hero-img .img-wrap{position:relative}
-    .hero-img img{width:100%; height:auto; display:block; aspect-ratio:16/8; object-fit:cover; transition:transform .6s ease}
+    .hero-img img{width:100%; display:block; object-fit:cover; transition:transform .6s ease}
     .hero-img:hover img{transform:scale(1.02)}
 
     /* LAYOUT GRID */
@@ -221,45 +276,167 @@ $comments = $getComments->getCommetsPosts($the_post_id);
     .search{display:flex;gap:8px}
     .search input{flex:1;border-radius:14px;padding:12px 14px;background:var(--glass2);border:1px solid var(--stroke);color:var(--fg)}
     .search button{border:1px solid var(--stroke);background:linear-gradient(135deg,var(--p),var(--s));color:white;border-radius:14px;padding:12px 14px;cursor:pointer}
+
+
+    /* ensure proper positioning context */
+.nav-in{ position: relative; }
+
+/* burger hidden on desktop */
+.menu-toggle{
+  display:none;border:1px solid var(--stroke);background:var(--glass);
+  padding:10px 12px;border-radius:12px;color:var(--fg);cursor:pointer
+}
+
+/* keep desktop layout intact */
+.nav-links{ display:flex; gap:18px; align-items:center; }
+
+/* mobile dropdown */
+@media(max-width:900px){
+  .menu-toggle{ display:inline-flex; align-items:center; justify-content:center; }
+  /* hide by default on mobile; override anything earlier */
+  .nav-links{ 
+    display:none !important; 
+    position:absolute; left:0; right:0; top:100%;
+    flex-direction:column; gap:10px; padding:14px 18px 18px;
+    border-top:1px solid var(--stroke);
+    background:rgba(10,13,20);
+    z-index: 50;
+  }
+  .nav-links.open{ display:flex !important; }
+  .nav-links a{
+    display:block; width:100%; padding:12px 10px;
+    border:1px solid var(--stroke); border-radius:12px; background:var(--glass);
+  }
+  body.menu-open{ overflow:hidden; }
+}
+
+
+/* ===== Mobile first polish ===== */
+@media (max-width: 900px){
+  .wrap{ padding:0 14px }
+  .nav-in{ padding:10px 0 }
+  .badge img{ height:36px }
+  .bt small{ font-size:10px; letter-spacing:.16em }
+  .bt b{ font-size:16px }
+
+  /* Hero */
+  .hero{ padding:44px 0 18px }
+  .hero-title{ font-size:28px; line-height:1.15 }
+
+  /* Editor picks: single column, taller thumbs */
+  .feat-row{ grid-template-columns:1fr; gap:12px }
+  .tile{ border-radius:16px }
+  .img-wrap img{ aspect-ratio:16/9 }
+  .tile-in{ padding:12px }
+  .tile h3{ font-size:16px }
+
+  /* Main grid: stack + spacing */
+  .grid{ grid-template-columns:1fr; gap:16px }
+  .list{ gap:14px }
+
+  /* Post cards: image on top, tighter copy */
+  .post{ grid-template-columns:1fr }
+  .post .img-wrap{ height:auto }
+  .post .img-wrap img{ aspect-ratio:16/9 }
+  .post .b{ padding:14px 12px }
+  .post h2{ font-size:18px; margin:4px 0 6px }
+  .post p{ font-size:14px; -webkit-line-clamp:2 }
+
+  /* Sidebar -> compact cards, no stickiness on small screens */
+  aside{ position:static }
+  .box{ padding:12px; border-radius:16px }
+  .box h4{ font-size:11px; margin:0 0 8px }
+  .search input, .search button{ padding:10px 12px; border-radius:12px }
+  .chips{ gap:6px }
+  .chip{ font-size:13px; padding:7px 10px }
+
+  /* Pagination: bigger tap targets */
+  .pager{ padding:6px; border-radius:14px }
+  .page{ min-width:40px; height:40px; border-radius:12px }
+  .ghost{ padding:10px 12px; border-radius:12px }
+
+  /* Footer */
+  .foot{ grid-template-columns:1fr; padding:16px 0; gap:8px }
+}
+
+/* Ultra-small phones */
+@media (max-width: 600px){
+  .hero-title{ font-size:24px }
+  .post h2{ font-size:17px }
+  .popular img{ width:96px; height:68px }
+}
+
+/* Better scroll perf + accessibility */
+@media (prefers-reduced-motion: reduce){
+  *{ animation: none !important; transition: none !important }
+}
+
+/* Prevent text collision under sticky header */
+.nav{ min-height:56px }
+
+
+
+/* 1) Absolute stop: no image can exceed its box */
+img, video, canvas, svg { max-width:100%; height:auto; display:block }
+
+/* 2) Constrain main container width smartly */
+.wrap { width:100%; max-width:1100px; margin:0 auto; padding:0 16px } /* tighten from 1260 */
+@media (min-width:1400px){ .wrap{ max-width:1200px } } /* optional */
+
+/* 3) Post card images: contain, never push columns */
+.post .img-wrap { width:100%; aspect-ratio:16/9; overflow:hidden; background:var(--glass2) }
+.post .img-wrap img { width:100%; height:100%; object-fit:cover }
+
+/* 4) Editor’s picks tiles */
+.tile .img-wrap { aspect-ratio:16/9 }
+.tile .img-wrap img { width:100%; height:100%; object-fit:cover }
+
+/* 5) Sidebar thumbs */
+.popular img { width:110px; height:78px; object-fit:cover; flex:0 0 110px }
+
+/* 6) Kill any rogue horizontal scroll from children */
+.wrap, .grid, .list, .post, .tile { overflow:hidden }
+
+.content a {
+  color: #704dffff;
+}
+
   </style>
 </head>
 <body>
   <!-- NAV -->
 <div class="nav">
-    <div class="wrap nav-in">
-        <!-- Brand -->
-        <a class="brand" href="<?= defined('BASE_URL') ? BASE_URL : '/' ?>">
-        <div class="badge" aria-hidden="true" style="background:none; border:none; box-shadow:none; padding:0;">
-            <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/WhiteLogo.png"
-                alt="Niterria logo"
-                style="height:42px; width:auto; display:block;">
-        </div>
-        <div class="bt">
-            <small>Niterria</small><b>Tech Journal</b>
-        </div>
-        </a>
+  <div class="wrap nav-in">
+    <a class="brand" href="<?= defined('BASE_URL') ? BASE_URL : '/' ?>">
+      <div class="badge" aria-hidden="true" style="background:none;border:none;box-shadow:none;padding:0;">
+        <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/WhiteLogo.png" alt="Niterria logo" style="height:42px;width:auto;display:block;">
+      </div>
+      <div class="bt"><small>Niterria</small><b>Tech Journal</b></div>
+    </a>
 
-        <!-- Navigation Links -->
-        <div class="nav-links">
-        <a href="<?= defined('BASE_URL') ? BASE_URL : '/' ?>">Home</a>
-        <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/about">About</a>
+    <!-- Burger -->
+    <button class="menu-toggle" aria-label="Menu" aria-expanded="false" aria-controls="primary-nav">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"/>
+      </svg>
+    </button>
 
-        <?php if(isLoggedIn()): ?>
-            <a href="<?= BASE_URL ?>/includes/logout.php">Logout</a>
-            <a href="<?= BASE_URL ?>/profile">Profile</a>
+    <!-- Links -->
+    <div id="primary-nav" class="nav-links" role="navigation">
+      <a href="<?= defined('BASE_URL') ? BASE_URL : '/' ?>">Home</a>
+      <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/about">About</a>
 
-            <?php if(is_admin()): ?>
-                <a href="<?= BASE_URL ?>/admin">Admin</a>
-            <?php endif; ?>
-
-        <?php else: ?>
-            <a href="<?= BASE_URL ?>/registration">Register</a>
-            <a href="<?= BASE_URL ?>/login" class="ghost">Login</a>
-        <?php endif; ?>
-
-        </div>
+      <?php if(isLoggedIn()): ?>
+        <a href="<?= BASE_URL ?>/includes/logout.php">Logout</a>
+        <a href="<?= BASE_URL ?>/profile">Profile</a>
+        <?php if(is_admin()): ?><a href="<?= BASE_URL ?>/admin">Admin</a><?php endif; ?>
+      <?php else: ?>
+        <a href="<?= BASE_URL ?>/registration">Register</a>
+        <a href="<?= BASE_URL ?>/login" class="ghost">Login</a>
+      <?php endif; ?>
     </div>
-    </div>
+  </div>
+</div>
 
   <!-- HERO POST -->
   <section class="hero">
@@ -271,7 +448,7 @@ $comments = $getComments->getCommetsPosts($the_post_id);
       </div>
       <div class="hero-img">
         <div class="img-wrap">
-          <img src="<?= (defined('BASE_URL') ? BASE_URL : '') ?>/images/<?= $post_image ? h($post_image) : 'y9DpT.jpg' ?>" alt="">
+          <img src="<?= (defined('BASE_URL') ? BASE_URL : '') ?>/images/<?= $post_image ? h($post_image) : 'y9DpT.jpg' ?>" alt="<?= h($post_title) ?>">
         </div>
       </div>
     </div>
@@ -599,5 +776,103 @@ confirmPopup.onclick = ()=>{
 
 
   </script>
+
+
+<script>
+  const btn = document.querySelector('.menu-toggle');
+  const nav = document.getElementById('primary-nav');
+
+  function closeMenu(){
+    nav.classList.remove('open');
+    document.body.classList.remove('menu-open');
+    btn?.setAttribute('aria-expanded','false');
+  }
+  function toggleMenu(e){
+    e?.stopPropagation();
+    const open = nav.classList.toggle('open');
+    document.body.classList.toggle('menu-open', open);
+    btn?.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  btn?.addEventListener('click', toggleMenu);
+
+  // close on outside click / ESC / desktop resize
+  document.addEventListener('click', (e)=>{
+    if(!nav.classList.contains('open')) return;
+    if(e.target.closest('#primary-nav') || e.target.closest('.menu-toggle')) return;
+    closeMenu();
+  });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
+  window.addEventListener('resize', ()=>{ if(innerWidth>900) closeMenu(); });
+</script>
+
+
+<!-- Cookie Consent -->
+<div id="cookie-banner" style="
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  background:rgba(255,255,255,.08); backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.15); color:#E9EEF6;
+  border-radius:18px; padding:18px 24px; max-width:480px;
+  font-size:14px; line-height:1.5; box-shadow:0 20px 60px rgba(0,0,0,.4);
+  display:none; z-index:2000; text-align:center;">
+  <p style="margin:0 0 12px;">We use cookies for analytics and to improve your experience.
+    By clicking <strong>Accept</strong>, you consent to Google and Ahrefs tracking cookies.</p>
+  <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+    <button id="acceptCookies" style="
+      border:none; background:linear-gradient(135deg,#260ED0,#5329ED);
+      color:white; font-weight:600; border-radius:12px;
+      padding:10px 20px; cursor:pointer;">Accept</button>
+    <a href='/privacy' style="color:#A8B1C0;text-decoration:underline;font-size:13px;">Learn more</a>
+  </div>
+</div>
+
+<script>
+(function(){
+  const banner = document.getElementById('cookie-banner');
+  const btn = document.getElementById('acceptCookies');
+  if(!localStorage.getItem('cookiesAccepted')){
+    banner.style.display = 'block';
+    banner.style.opacity = '0';
+    setTimeout(()=>banner.style.transition='opacity .5s ease',50);
+    setTimeout(()=>banner.style.opacity='1',100);
+  }
+
+  btn?.addEventListener('click', ()=>{
+    localStorage.setItem('cookiesAccepted','true');
+    banner.style.opacity='0';
+    setTimeout(()=>banner.remove(),400);
+    loadAnalytics();
+  });
+
+  if(localStorage.getItem('cookiesAccepted')) loadAnalytics();
+
+  function loadAnalytics(){
+    // Google Analytics
+    const ga1=document.createElement('script');
+    ga1.async=true;
+    ga1.src='https://www.googletagmanager.com/gtag/js?id=G-RYJMZ5MVRY';
+    document.head.appendChild(ga1);
+    window.dataLayer=window.dataLayer||[];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js',new Date());
+    gtag('config','G-RYJMZ5MVRY');
+
+    // Ahrefs
+    const ahrefs=document.createElement('script');
+    ahrefs.async=true;
+    ahrefs.src='https://analytics.ahrefs.com/analytics.js';
+    ahrefs.setAttribute('data-key','zweMA87LDqQO2bvh5HVlIw');
+    document.head.appendChild(ahrefs);
+
+    // Google Ads / AdSense
+    const ads=document.createElement('script');
+    ads.async=true;
+    ads.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7440179235836916';
+    ads.crossOrigin='anonymous';
+    document.head.appendChild(ads);
+  }
+})();
+</script>
+
 </body>
 </html>

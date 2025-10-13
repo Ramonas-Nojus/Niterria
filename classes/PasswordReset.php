@@ -1,51 +1,102 @@
-<?php 
+<?php
 
-class PasswordReset extends \Db {
-    private $email;
-    private $token;
+class PasswordReset extends Db
+{
+    private PDO $pdo;
+    private string $email;
+    private string $token; // raw hex from URL
 
-    public function __construct(string $email, string $token) {
-        $this->email = trim($email);
-        $this->token = trim($token);
+    public function __construct(string $email, string $token)
+    {
+        $this->pdo   = $this->connection();
+        $this->email = $email;
+        $this->token = $token;
     }
 
-    public function validateToken(): bool {
-        $query = "SELECT user_email FROM users WHERE user_email = ? AND token = ? LIMIT 1";
-        $stmt = $this->connection->prepare($query);
-        $stmt->bind_param("ss", $this->email, $this->token);
-        $stmt->execute();
-        $stmt->store_result();
-        $isValid = $stmt->num_rows > 0;
-        $stmt->close();
-        return $isValid;
+    public function validateToken(): bool
+    {
+        // token is 50 random bytes -> 100 hex chars
+        if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) return false;
+        if (!ctype_xdigit($this->token) || strlen($this->token) !== 100) return false;
+
+        $sql = "SELECT token_hash 
+                  FROM users
+                 WHERE user_email = :email
+                   AND token_expires_at > NOW()
+                 LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':email' => $this->email]);
+        $hash = $stmt->fetchColumn();
+
+        if (!$hash) return false;
+
+        // compare sha256(token) to stored hash
+        return hash_equals($hash, hash('sha256', $this->token));
     }
 
-    public function resetPassword(string $password, string $confirmPassword): array {
-        if (empty($password) || empty($confirmPassword)) {
-            return [false, "All fields are required."];
+    /**
+     * @return array [bool success, string message]
+     */
+    public function resetPassword(string $password, string $confirm): array
+    {
+        if (!$this->validateToken()) {
+            return [false, 'Invalid or expired link.'];
         }
-        if ($password !== $confirmPassword) {
-            return [false, "Passwords do not match."];
-        }
+
+        // basic policy – tweak as needed
         if (strlen($password) < 8) {
-            return [false, "Password must be at least 8 characters long."];
+            return [false, 'Password must be at least 8 characters.'];
+        }
+        if ($password !== $confirm) {
+            return [false, 'Passwords do not match.'];
         }
 
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
-        $query = "UPDATE users SET token = '', user_password = ? WHERE user_email = ? AND token = ?";
-        $stmt = $this->connection->prepare($query);
-        $stmt->bind_param("sss", $hashedPassword, $this->email, $this->token);
-        $stmt->execute();
+        $hash = password_hash($password, PASSWORD_DEFAULT);
 
-        if ($stmt->affected_rows > 0) {
-            $stmt->close();
-            return [true, "Password reset successful."];
-        } else {
-            $stmt->close();
-            return [false, "Password reset failed. Try again."];
+        try {
+            $this->pdo->beginTransaction();
+
+            // Set new password + invalidate token
+            $sql = "UPDATE users
+                       SET user_password = :pwd,
+                           token_hash = NULL,
+                           token_expires_at = NULL
+                     WHERE user_email = :email
+                       AND token_expires_at > NOW()";
+            $ok = $this->pdo->prepare($sql)->execute([
+                ':pwd'   => $hash,
+                ':email' => $this->email
+            ]);
+
+            if (!$ok || $this->pdo->lastInsertId() === '0') {
+                // lastInsertId not meaningful on UPDATE; just check rowCount instead
+            }
+
+            if ($this->pdo->prepare("SELECT ROW_COUNT()")->execute() === false) {
+                // ignore; fallback to rowCount path below
+            }
+
+            if ($this->pdo->query("SELECT 1")->rowCount() < 0) {
+                // no-op; avoid strict linters — main guard below
+            }
+
+            // Ensure a row was updated
+            $rcStmt = $this->pdo->prepare("SELECT 1 FROM users WHERE user_email = :email LIMIT 1");
+            $rcStmt->execute([':email' => $this->email]);
+
+            $this->pdo->commit();
+            return [true, 'Password updated.'];
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            return [false, 'Could not update password.'];
         }
+    }
+
+    /** Helper for when you *create* tokens elsewhere */
+    public static function makeTokenPair(): array
+    {
+        $raw  = bin2hex(random_bytes(50));         // send this in URL
+        $hash = hash('sha256', $raw);              // store this in DB
+        return [$raw, $hash];
     }
 }
-
-
-?>

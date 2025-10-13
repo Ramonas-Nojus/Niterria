@@ -80,9 +80,10 @@ class ComposerStaticInitadf75e4bee6b280c58e38bf1e810754e
         'Config' => __DIR__ . '/../..' . '/classes/Config.php',
         'Db' => __DIR__ . '/../..' . '/classes/db.class.php',
         'Likes' => __DIR__ . '/../..' . '/classes/Likes.class.php',
+        'PasswordReset' => __DIR__ . '/../..' . '/classes/PasswordReset.php',
         'Posts' => __DIR__ . '/../..' . '/classes/Posts.class.php',
         'Users' => __DIR__ . '/../..' . '/classes/Users.class.php',
-        'search\\Search' => __DIR__ . '/../..' . '/classes/search/search.class.php',
+        'search\\Search' => __DIR__ . '/../..' . '/classes/search/Search.class.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
