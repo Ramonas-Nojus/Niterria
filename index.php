@@ -54,8 +54,10 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Niterria — Tech Journal</title>
-  <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>/images/favicon.png">
-  <meta name="description" content="Niterria — premium tech journal. Modern dark UI, glass cards, smooth glow/zoom effects." />
+  <link rel="icon" href="<?= BASE_URL ?>/images/favicon.ico" sizes="any">
+  <link rel="icon" type="images/png" href="<?= BASE_URL ?>//favicon-48.png" sizes="48x48">
+  <link rel="apple-touch-icon" href="<?= BASE_URL ?>/images/apple-touch-icon.png">
+  <meta name="description" content="Niterria — tech journal." />
   <link rel="canonical" href="<?= BASE_URL ?>" />
 
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -357,8 +359,8 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
       <div class="hero-head">
         <div>
           <span class="eyebrow"><span class="dot"></span> Editor’s Picks</span>
-          <div class="hero-title">Modern systems, <span class="fade">timeless design</span>.</div>
-          <p class="intro-snippet">Discover reviews, trends, and analysis on modern tech, software tools, and digital systems — curated by humans, not AI bots.</p>
+          <h1 class="hero-title">Exploring modern  <span class="fade">technology</span>.</h1>
+          <p class="intro-snippet">Discover reviews, trends, and analysis on modern tech, software tools, and digital systems — created with expert guidance and AI precision.</p>
 
         </div>
       </div>

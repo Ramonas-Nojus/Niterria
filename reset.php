@@ -39,7 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Reset Password — Niterria</title>
-  <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>/images/favicon.png">
+  <link rel="icon" href="<?= BASE_URL ?>/images/favicon.ico" sizes="any">
+  <link rel="icon" type="images/png" href="<?= BASE_URL ?>//favicon-48.png" sizes="48x48">
+  <link rel="apple-touch-icon" href="<?= BASE_URL ?>/images/apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
 :root {
