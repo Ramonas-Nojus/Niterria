@@ -47,7 +47,7 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
   <link rel="icon" href="<?= BASE_URL ?>/images/favicon.ico" sizes="any">
   <link rel="icon" type="images/png" href="<?= BASE_URL ?>//favicon-48.png" sizes="48x48">
   <link rel="apple-touch-icon" href="<?= BASE_URL ?>/images/apple-touch-icon.png">
-  <meta name="description" content="Create your Niterria account. Premium dark glass UI with smooth glow transitions." />
+  <meta name="robots" content="noindex, nofollow">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
     :root{ --bg:#0A0D14; --fg:#E9EEF6; --muted:#A8B1C0; --link:#DDE3F2; --glass:rgba(255,255,255,.06); --glass2:rgba(255,255,255,.10); --stroke:rgba(255,255,255,.12); --p:#260ED0; --s:#5329ED; --t:#00D5C9; --r:22px; --shadow:0 28px 80px -20px rgba(83,41,237,.45); }

@@ -30,7 +30,7 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
   <link rel="icon" href="<?= BASE_URL ?>/images/favicon.ico" sizes="any">
   <link rel="icon" type="images/png" href="<?= BASE_URL ?>//favicon-48.png" sizes="48x48">
   <link rel="apple-touch-icon" href="<?= BASE_URL ?>/images/apple-touch-icon.png">
-  <meta name="description" content="Secure login to Niterria. Premium dark glass UI." />
+  <meta name="robots" content="noindex, nofollow">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
     :root{

@@ -10,6 +10,7 @@ include "admin/functions.php";
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="description" content="Learn about Niterria — a tech journal blending human insight and AI precision to explore the systems and technology shaping our world.">
 <title>About — Niterria</title>
 <link rel="icon" href="<?= BASE_URL ?>/images/favicon.ico" sizes="any">
 <link rel="icon" type="images/png" href="<?= BASE_URL ?>//favicon-48.png" sizes="48x48">

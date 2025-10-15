@@ -52,7 +52,8 @@ if ($pop_rs = mysqli_query($connection, "SELECT post_id, post_title, post_date, 
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title><?= $cat_name ?> — Niterria</title>
+<meta name="description" content="Explore posts in the <?= h($cat_name) ?> category — insights on systems, tools, and emerging tech from the Niterria Tech Journal." />
+<title><?= h($cat_name) ?> — Niterria Tech Journal</title>
 <link rel="icon" href="<?= BASE_URL ?>/images/favicon.ico" sizes="any">
 <link rel="icon" type="images/png" href="<?= BASE_URL ?>//favicon-48.png" sizes="48x48">
 <link rel="apple-touch-icon" href="<?= BASE_URL ?>/images/apple-touch-icon.png">

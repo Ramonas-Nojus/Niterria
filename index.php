@@ -51,13 +51,13 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <!doctype html>
 <html lang="en">
 <head>
+  <meta name="description" content="Niterria is a modern tech journal exploring systems, software tools, and future innovation — created for tech builders and creators." />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Niterria — Tech Journal</title>
   <link rel="icon" href="<?= BASE_URL ?>/images/favicon.ico" sizes="any">
   <link rel="icon" type="images/png" href="<?= BASE_URL ?>//favicon-48.png" sizes="48x48">
   <link rel="apple-touch-icon" href="<?= BASE_URL ?>/images/apple-touch-icon.png">
-  <meta name="description" content="Niterria — tech journal." />
   <link rel="canonical" href="<?= BASE_URL ?>" />
 
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
