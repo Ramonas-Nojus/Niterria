@@ -403,6 +403,90 @@ img, video, canvas, svg { max-width:100%; height:auto; display:block }
   color: #704dffff;
 }
 
+.article table {
+  width:100%;
+  max-width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  margin:26px 0;
+  border:1px solid var(--stroke);
+  border-radius:18px;
+  overflow:hidden;
+  background:var(--glass);
+  box-shadow:0 20px 60px -20px rgba(83,41,237,.45);
+  backdrop-filter:blur(16px);
+  table-layout:fixed; /* prevents column overflow */
+}
+
+.article th, .article td {
+  padding:14px 18px;
+  text-align:left;
+  border-bottom:1px solid var(--stroke);
+  word-break:break-word;
+}
+
+.article th {
+  background:linear-gradient(135deg,var(--p),var(--s));
+  color:#fff;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  font-size:13px;
+}
+
+.article tr:last-child td {border-bottom:none;}
+.article tr:hover td {
+  background:color-mix(in oklab,var(--s) 12%, transparent);
+  transition:.25s;
+}
+.article td {
+  font-size:15px;
+  color:var(--fg);
+}
+.article caption {
+  caption-side:top;
+  text-align:left;
+  color:var(--muted);
+  font-size:14px;
+  margin-bottom:8px;
+}
+
+/* ===== MOBILE FIX ===== */
+@media(max-width:700px){
+  .article table {
+    width:100%;
+    table-layout:fixed; /* force equal-width columns */
+    word-wrap:break-word;
+  }
+
+  .article th, .article td {
+    white-space:normal !important;
+    word-break:break-word;
+    padding:10px 8px;
+  }
+
+  .article th {
+    font-size:12px;
+  }
+
+  .article td {
+    font-size:14px;
+  }
+
+  .article {
+    overflow-x:hidden;
+  }
+}
+
+
+/* ===== SAFETY ===== */
+html, body {
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+
+
   </style>
 </head>
 <body>
