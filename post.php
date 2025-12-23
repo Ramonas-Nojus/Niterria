@@ -99,395 +99,22 @@ if(isset($_GET['unlike'])){
 // Fetch comments
 $getComments = new Comments();
 $comments = $getComments->getCommetsPosts($the_post_id);
+
+
 ?>
+
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+ <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><?= h($post_title) ?> — Niterria</title>
   <link rel="icon" href="<?= BASE_URL ?>/images/favicon.ico" sizes="any">
   <link rel="icon" type="images/png" href="<?= BASE_URL ?>//favicon-48.png" sizes="48x48">
   <link rel="apple-touch-icon" href="<?= BASE_URL ?>/images/apple-touch-icon.png">
-  <link rel="canonical" href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $the_post_id ?>" />
-  <meta name="description" content="<?= h($post_subtitle) ?>" />
+  <meta name="description" content="Search Niterria — premium tech/luxury posts." />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{ --bg:#0A0D14; --fg:#E9EEF6; --muted:#A8B1C0; --link:#DDE3F2; --glass:rgba(255,255,255,.06); --glass2:rgba(255,255,255,.10); --stroke:rgba(255,255,255,.12); --p:#260ED0; --s:#5329ED; --t:#00D5C9; --r:22px; --shadow:0 28px 80px -20px rgba(83,41,237,.45); }
-    *{box-sizing:border-box}
-    body{margin:0; color:var(--fg); font-family:Manrope,system-ui,Segoe UI,Roboto,Arial,sans-serif; background:radial-gradient(70% 90% at 10% -10%, color-mix(in oklab, var(--p) 35%, transparent), transparent 60%), radial-gradient(60% 60% at 90% 0%, color-mix(in oklab, var(--s) 40%, transparent), transparent 60%), linear-gradient(180deg,#0B0A15 0%, var(--bg) 60%); background-attachment:fixed;}
-    a{color:var(--link); text-decoration:none}
-    .wrap{max-width:1260px; margin:0 auto; padding:0 22px}
-
-    /* NAV */
-    .nav {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      backdrop-filter: saturate(180%) blur(12px);
-      background: color-mix(in oklab, var(--p) 12%, transparent);
-      border-bottom: 1px solid var(--stroke);
-      box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    }
-    .wrap {
-      max-width: 1260px;
-      margin: 0 auto;
-      padding: 0 22px;
-    }
-    .nav-in {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 0;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--fg);
-      text-decoration: none;
-    }
-    .bt small {
-      display: block;
-      letter-spacing: .18em;
-      color: #C9D2E1;
-      opacity: .85;
-      text-transform: uppercase;
-      font-size: 11px;
-    }
-    .bt b {
-      display: block;
-      font-weight: 800;
-      color: var(--fg);
-    }
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-    .nav-links a {
-      color: var(--fg);
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 15px;
-      padding: 8px 14px;
-      border-radius: 12px;
-      transition: .25s;
-    }
-    .nav-links a:hover {
-      background: var(--glass2);
-    }
-    .nav-links .ghost {
-      border: 1px solid var(--stroke);
-      background: var(--glass);
-    }
-
-    /* HERO POST */
-    .hero{padding:44px 0 18px}
-    .post-hero{display:grid; grid-template-columns:1fr; gap:16px}
-    .headline{font-family:'Playfair Display', serif; font-size:44px; line-height:1.08; margin:0}
-    .sub{color:var(--muted); font-size:18px}
-    .meta{color:#B6C0CF; font-size:13px}
-    .hero-img{border:1px solid var(--stroke); background:var(--glass); border-radius:22px; overflow:hidden}
-    .hero-img .img-wrap{position:relative}
-    .hero-img img{width:100%; display:block; object-fit:cover; transition:transform .6s ease}
-    .hero-img:hover img{transform:scale(1.02)}
-
-    /* LAYOUT GRID */
-    .grid{display:grid; grid-template-columns:minmax(0,2fr) minmax(320px,1fr); gap:24px}
-    @media(max-width:980px){ .grid{grid-template-columns:1fr} }
-
-    /* ARTICLE */
-    .article{border:1px solid var(--stroke); background:var(--glass); border-radius:22px; padding:22px; line-height:1.7; font-size:18px}
-    .disclosure{font-size:13px; color:#b9c2d1; text-align:center; margin-bottom:10px}
-    .article h2, .article h3{font-family:'Playfair Display', serif}
-
-    /* LIKE */
-    .like-row{display:flex; align-items:center; gap:12px; margin:14px 0 6px}
-    .heart{display:inline-grid; place-items:center; width:44px; height:44px; border-radius:50%; border:1px solid var(--stroke); background:var(--glass); transition:transform .15s ease, box-shadow .25s}
-    .heart:hover{transform:translateY(-2px)}
-    .heart.liked{background:linear-gradient(135deg,#f43f5e,#fb7185); box-shadow:0 10px 30px -10px rgba(244,63,94,.7)}
-    .heart svg{display:block}
-
-    /* COMMENTS */
-    .comments{margin-top:18px}
-    .c-form{border:1px solid var(--stroke); background:var(--glass); border-radius:16px; padding:16px}
-    textarea{width:100%; border-radius:12px; padding:12px; background:var(--glass2); border:1px solid var(--stroke); color:var(--fg)}
-    .c-list{display:grid; gap:12px; margin-top:16px}
-    .c-item{display:grid; grid-template-columns:auto 1fr; gap:12px; border:1px solid var(--stroke); background:var(--glass); border-radius:16px; padding:12px}
-    .avatar{width:52px; height:52px; border-radius:50%; object-fit:cover; border:1px solid var(--stroke)}
-    .c-head{display:flex; align-items:center; justify-content:space-between}
-    .c-name{font-weight:700}
-    .c-date{color:#AEB6C7; font-size:12px}
-    .c-actions a{margin-left:10px}
-    .edit-inp{width:100%; border-radius:10px; padding:10px; background:var(--glass2); border:1px solid var(--stroke); color:var(--fg)}
-
-    /* SIDEBAR */
-    aside{position:sticky; top:92px; height:max-content}
-    .box{border:1px solid var(--stroke); background:var(--glass); border-radius:22px; padding:16px; margin-bottom:16px}
-    .box h4{margin:4px 0 10px; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:#D8DFF0}
-    .search{position:relative}
-    .search input{width:100%; border-radius:14px; padding:12px 44px 12px 12px; background:var(--glass2); border:1px solid var(--stroke); color:var(--fg)}
-    .search svg{position:absolute; right:12px; top:50%; transform:translateY(-50%); opacity:.85}
-    .chips{display:flex; flex-wrap:wrap; gap:8px}
-    .chip{border:1px solid var(--stroke); background:var(--glass2); padding:8px 12px; border-radius:12px; font-size:14px}
-    .popular{display:grid; gap:10px}
-    .popular a{display:flex; gap:10px; color:var(--fg)}
-    .popular img{width:110px; height:78px; object-fit:cover; border-radius:10px; border:1px solid var(--stroke)}
-
-    /* FOOTER */
-    footer{border-top:1px solid var(--stroke); background:color-mix(in oklab, var(--s) 10%, transparent)}
-    .foot{display:grid; grid-template-columns:1fr auto; gap:12px; padding:22px 0}
-    @media(max-width:800px){.foot{grid-template-columns:1fr}}
-    .icons{display:flex; gap:12px}
-    .icon{width:42px; height:42px; border-radius:14px; background:var(--glass); border:1px solid var(--stroke); display:grid; place-items:center}
-
-    /* BACK TO TOP */
-    .to-top{position:fixed; right:18px; bottom:18px; width:48px; height:48px; display:grid; place-items:center; border-radius:50%; border:1px solid var(--stroke); background:linear-gradient(135deg,var(--p),var(--s)); color:white; box-shadow:var(--shadow); opacity:0; pointer-events:none; transform:translateY(10px); transition:.25s}
-    .to-top.show{opacity:1; pointer-events:auto; transform:translateY(0)}
-
-
-    .btn-glass{
-  padding:10px 18px;
-  border:none;
-  border-radius:14px;
-  font-weight:600;
-  font-family:Manrope,system-ui,Segoe UI,Roboto,Arial,sans-serif;
-  cursor:pointer;
-  color:var(--fg);
-  background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
-  backdrop-filter:blur(10px) saturate(180%);
-  transition:all .25s ease;
-  box-shadow:0 0 0 1px var(--stroke) inset;
-}
-.btn-glass:hover{
-  transform:translateY(-2px);
-  box-shadow:0 10px 25px -10px rgba(83,41,237,.45),0 0 0 1px var(--p) inset;
-}
-.btn-glass.cancel:hover{
-  box-shadow:0 10px 25px -10px rgba(255,80,80,.45),0 0 0 1px #ff5050 inset;
-}
-.btn-glass.confirm{
-  background:linear-gradient(135deg,var(--p),var(--s));
-  color:#fff;
-}
-.btn-glass.confirm:hover{
-  box-shadow:0 10px 30px -10px rgba(83,41,237,.6);
-  transform:translateY(-2px) scale(1.02);
-}
-    .search{display:flex;gap:8px}
-    .search input{flex:1;border-radius:14px;padding:12px 14px;background:var(--glass2);border:1px solid var(--stroke);color:var(--fg)}
-    .search button{border:1px solid var(--stroke);background:linear-gradient(135deg,var(--p),var(--s));color:white;border-radius:14px;padding:12px 14px;cursor:pointer}
-
-
-    /* ensure proper positioning context */
-.nav-in{ position: relative; }
-
-/* burger hidden on desktop */
-.menu-toggle{
-  display:none;border:1px solid var(--stroke);background:var(--glass);
-  padding:10px 12px;border-radius:12px;color:var(--fg);cursor:pointer
-}
-
-/* keep desktop layout intact */
-.nav-links{ display:flex; gap:18px; align-items:center; }
-
-/* mobile dropdown */
-@media(max-width:900px){
-  .menu-toggle{ display:inline-flex; align-items:center; justify-content:center; }
-  /* hide by default on mobile; override anything earlier */
-  .nav-links{ 
-    display:none !important; 
-    position:absolute; left:0; right:0; top:100%;
-    flex-direction:column; gap:10px; padding:14px 18px 18px;
-    border-top:1px solid var(--stroke);
-    background:rgba(10,13,20);
-    z-index: 50;
-  }
-  .nav-links.open{ display:flex !important; }
-  .nav-links a{
-    display:block; width:100%; padding:12px 10px;
-    border:1px solid var(--stroke); border-radius:12px; background:var(--glass);
-  }
-  body.menu-open{ overflow:hidden; }
-}
-
-
-/* ===== Mobile first polish ===== */
-@media (max-width: 900px){
-  .wrap{ padding:0 14px }
-  .nav-in{ padding:10px 0 }
-  .badge img{ height:36px }
-  .bt small{ font-size:10px; letter-spacing:.16em }
-  .bt b{ font-size:16px }
-
-  /* Hero */
-  .hero{ padding:44px 0 18px }
-  .hero-title{ font-size:28px; line-height:1.15 }
-
-  /* Editor picks: single column, taller thumbs */
-  .feat-row{ grid-template-columns:1fr; gap:12px }
-  .tile{ border-radius:16px }
-  .img-wrap img{ aspect-ratio:16/9 }
-  .tile-in{ padding:12px }
-  .tile h3{ font-size:16px }
-
-  /* Main grid: stack + spacing */
-  .grid{ grid-template-columns:1fr; gap:16px }
-  .list{ gap:14px }
-
-  /* Post cards: image on top, tighter copy */
-  .post{ grid-template-columns:1fr }
-  .post .img-wrap{ height:auto }
-  .post .img-wrap img{ aspect-ratio:16/9 }
-  .post .b{ padding:14px 12px }
-  .post h2{ font-size:18px; margin:4px 0 6px }
-  .post p{ font-size:14px; -webkit-line-clamp:2 }
-
-  /* Sidebar -> compact cards, no stickiness on small screens */
-  aside{ position:static }
-  .box{ padding:12px; border-radius:16px }
-  .box h4{ font-size:11px; margin:0 0 8px }
-  .search input, .search button{ padding:10px 12px; border-radius:12px }
-  .chips{ gap:6px }
-  .chip{ font-size:13px; padding:7px 10px }
-
-  /* Pagination: bigger tap targets */
-  .pager{ padding:6px; border-radius:14px }
-  .page{ min-width:40px; height:40px; border-radius:12px }
-  .ghost{ padding:10px 12px; border-radius:12px }
-
-  /* Footer */
-  .foot{ grid-template-columns:1fr; padding:16px 0; gap:8px }
-}
-
-/* Ultra-small phones */
-@media (max-width: 600px){
-  .hero-title{ font-size:24px }
-  .post h2{ font-size:17px }
-  .popular img{ width:96px; height:68px }
-}
-
-/* Better scroll perf + accessibility */
-@media (prefers-reduced-motion: reduce){
-  *{ animation: none !important; transition: none !important }
-}
-
-/* Prevent text collision under sticky header */
-.nav{ min-height:56px }
-
-
-
-/* 1) Absolute stop: no image can exceed its box */
-img, video, canvas, svg { max-width:100%; height:auto; display:block }
-
-/* 2) Constrain main container width smartly */
-.wrap { width:100%; max-width:1100px; margin:0 auto; padding:0 16px } /* tighten from 1260 */
-@media (min-width:1400px){ .wrap{ max-width:1200px } } /* optional */
-
-/* 3) Post card images: contain, never push columns */
-.post .img-wrap { width:100%; aspect-ratio:16/9; overflow:hidden; background:var(--glass2) }
-.post .img-wrap img { width:100%; height:100%; object-fit:cover }
-
-/* 4) Editor’s picks tiles */
-.tile .img-wrap { aspect-ratio:16/9 }
-.tile .img-wrap img { width:100%; height:100%; object-fit:cover }
-
-/* 5) Sidebar thumbs */
-.popular img { width:110px; height:78px; object-fit:cover; flex:0 0 110px }
-
-/* 6) Kill any rogue horizontal scroll from children */
-.wrap, .grid, .list, .post, .tile { overflow:hidden }
-
-.content a {
-  color: #704dffff;
-}
-
-.article table {
-  width:100%;
-  max-width:100%;
-  border-collapse:separate;
-  border-spacing:0;
-  margin:26px 0;
-  border:1px solid var(--stroke);
-  border-radius:18px;
-  overflow:hidden;
-  background:var(--glass);
-  box-shadow:0 20px 60px -20px rgba(83,41,237,.45);
-  backdrop-filter:blur(16px);
-  table-layout:fixed; /* prevents column overflow */
-}
-
-.article th, .article td {
-  padding:14px 18px;
-  text-align:left;
-  border-bottom:1px solid var(--stroke);
-  word-break:break-word;
-}
-
-.article th {
-  background:linear-gradient(135deg,var(--p),var(--s));
-  color:#fff;
-  font-weight:700;
-  text-transform:uppercase;
-  letter-spacing:.05em;
-  font-size:13px;
-}
-
-.article tr:last-child td {border-bottom:none;}
-.article tr:hover td {
-  background:color-mix(in oklab,var(--s) 12%, transparent);
-  transition:.25s;
-}
-.article td {
-  font-size:15px;
-  color:var(--fg);
-}
-.article caption {
-  caption-side:top;
-  text-align:left;
-  color:var(--muted);
-  font-size:14px;
-  margin-bottom:8px;
-}
-
-/* ===== MOBILE FIX ===== */
-@media(max-width:700px){
-  .article table {
-    width:100%;
-    table-layout:fixed; /* force equal-width columns */
-    word-wrap:break-word;
-  }
-
-  .article th, .article td {
-    white-space:normal !important;
-    word-break:break-word;
-    padding:10px 8px;
-  }
-
-  .article th {
-    font-size:12px;
-  }
-
-  .article td {
-    font-size:14px;
-  }
-
-  .article {
-    overflow-x:hidden;
-  }
-}
-
-
-/* ===== SAFETY ===== */
-html, body {
-  max-width:100%;
-  overflow-x:hidden;
-}
-
-
-
-  </style>
+  <link rel="stylesheet" href="<?= BASE_URL ?>/css/post.css">
 </head>
 <body>
   <!-- NAV -->
@@ -532,6 +159,18 @@ html, body {
         <h1 class="headline"><?= h($post_title) ?></h1>
         <div class="meta"><?= h(date('M j, Y', strtotime($post_date))) ?></div>
       </div>
+
+      <div class="readmeta" id="readmeta" hidden>
+        <span class="readmeta__dot"></span>
+        <span class="readmeta__text">
+          <span id="readTotal">~0</span> min read
+          <span class="readmeta__sep">·</span>
+          You’re <span id="readIn">0</span> min in
+        </span>
+      </div>
+
+
+
       <div class="hero-img">
         <div class="img-wrap">
           <img src="<?= (defined('BASE_URL') ? BASE_URL : '') ?>/images/<?= $post_image ? h($post_image) : 'y9DpT.jpg' ?>" alt="<?= h($post_title) ?>">
@@ -620,16 +259,19 @@ html, body {
     </article>
 
     <!-- SIDEBAR RIGHT -->
-    <aside>
+       <aside>
+      <!-- Search -->
       <div class="box">
-    <h4>Search</h4>
-    <form method="get" action="/search.php">
-        <div class="search">
-        <input name="search" placeholder="Find something good…" />
-        <button name="submit" type="submit">Search</button>
+        <h4>Search</h4>
+        <form method="get" action="/search.php">
+            <div class="search">
+            <input name="search" placeholder="Find something good…" />
+            <button name="submit" type="submit">Search</button>
+            </div>
+        </form>
         </div>
-    </form>
-    </div>
+
+      <!-- Categories -->
       <div class="box">
         <h4>Categories</h4>
         <div class="chips">
@@ -638,12 +280,17 @@ html, body {
           <?php endforeach; ?>
         </div>
       </div>
+
+      <!-- Popular -->
       <div class="box">
         <h4>Popular</h4>
         <div class="popular">
-          <?php foreach ($popular as $pp): ?>
-            <a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $the_post_id ?>">
-              <img src="<?= (defined('BASE_URL') ? BASE_URL : '') ?>/images/<?= $pp['post_image'] ? h($pp['post_image']) : 'y9DpT.jpg' ?>" alt="thumb">
+          <?php foreach ($popular as $pp): 
+              $post_slug = slugify($pp['post_title']);
+
+            ?>
+            <a href="<?= BASE_URL ?>/<?= urlencode($post_slug) ?>-<?= $pp['post_id'] ?>">
+              <img src="<?= defined('BASE_URL') ? BASE_URL : '' ?>/images/<?= $pp['post_image'] ? h($pp['post_image']) : 'y9DpT.jpg' ?>" alt="thumb">
               <div>
                 <div style="font-weight:700; line-height:1.25; margin-bottom:4px; color:var(--fg)"><?= h($pp['post_title']) ?></div>
                 <div style="color:#AEB6C7; font-size:12px;"><?= h(date('M Y', strtotime($pp['post_date']))) ?></div>
@@ -655,7 +302,7 @@ html, body {
     </aside>
   </section>
 
-  <!-- FOOTER -->
+ <!-- FOOTER -->
   <footer>
     <div class="wrap foot">
       <div style="color:#B8C2D2; font-size:14px">© <?= date('Y') ?> Niterria — Built with care.</div>
@@ -704,8 +351,8 @@ html, body {
 </div>
 
 
+<script >
 
-  <script>
     const toTop = document.getElementById('toTop');
     window.addEventListener('scroll', () => { if (window.scrollY > 320) toTop.classList.add('show'); else toTop.classList.remove('show'); });
     toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
@@ -860,38 +507,10 @@ confirmPopup.onclick = ()=>{
 };
 
 
-
-  </script>
-
-
-<script>
-  const btn = document.querySelector('.menu-toggle');
-  const nav = document.getElementById('primary-nav');
-
-  function closeMenu(){
-    nav.classList.remove('open');
-    document.body.classList.remove('menu-open');
-    btn?.setAttribute('aria-expanded','false');
-  }
-  function toggleMenu(e){
-    e?.stopPropagation();
-    const open = nav.classList.toggle('open');
-    document.body.classList.toggle('menu-open', open);
-    btn?.setAttribute('aria-expanded', open ? 'true' : 'false');
-  }
-
-  btn?.addEventListener('click', toggleMenu);
-
-  // close on outside click / ESC / desktop resize
-  document.addEventListener('click', (e)=>{
-    if(!nav.classList.contains('open')) return;
-    if(e.target.closest('#primary-nav') || e.target.closest('.menu-toggle')) return;
-    closeMenu();
-  });
-  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
-  window.addEventListener('resize', ()=>{ if(innerWidth>900) closeMenu(); });
 </script>
 
+
+<script src="<?= BASE_URL ?>/js/post.js"></script>
 
 <!-- Cookie Consent -->
 <div id="cookie-banner" style="
@@ -912,53 +531,7 @@ confirmPopup.onclick = ()=>{
   </div>
 </div>
 
-<script>
-(function(){
-  const banner = document.getElementById('cookie-banner');
-  const btn = document.getElementById('acceptCookies');
-  if(!localStorage.getItem('cookiesAccepted')){
-    banner.style.display = 'block';
-    banner.style.opacity = '0';
-    setTimeout(()=>banner.style.transition='opacity .5s ease',50);
-    setTimeout(()=>banner.style.opacity='1',100);
-  }
-
-  btn?.addEventListener('click', ()=>{
-    localStorage.setItem('cookiesAccepted','true');
-    banner.style.opacity='0';
-    setTimeout(()=>banner.remove(),400);
-    loadAnalytics();
-  });
-
-  if(localStorage.getItem('cookiesAccepted')) loadAnalytics();
-
-  function loadAnalytics(){
-    // Google Analytics
-    const ga1=document.createElement('script');
-    ga1.async=true;
-    ga1.src='https://www.googletagmanager.com/gtag/js?id=G-RYJMZ5MVRY';
-    document.head.appendChild(ga1);
-    window.dataLayer=window.dataLayer||[];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js',new Date());
-    gtag('config','G-RYJMZ5MVRY');
-
-    // Ahrefs
-    const ahrefs=document.createElement('script');
-    ahrefs.async=true;
-    ahrefs.src='https://analytics.ahrefs.com/analytics.js';
-    ahrefs.setAttribute('data-key','zweMA87LDqQO2bvh5HVlIw');
-    document.head.appendChild(ahrefs);
-
-    // Google Ads / AdSense
-    const ads=document.createElement('script');
-    ads.async=true;
-    ads.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7440179235836916';
-    ads.crossOrigin='anonymous';
-    document.head.appendChild(ads);
-  }
-})();
-</script>
+<script src="./js/cookies.js"></script>
 
 </body>
 </html>
